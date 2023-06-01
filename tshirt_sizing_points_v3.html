@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Points Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <style>
+    .points-card {
+      background-color: #00000000;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .points-label {
+      color: black;
+      font-size: 24px;
+    }
+    
+    .points-display {
+      color: black;
+      font-size: 48px;
+      margin-top: 20px;
+    }
+    
+    .reset-button {
+      margin-top: 20px;
+    }
+ </style>
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-one-third">
+          <div class="field">
+            <div class="card" style="background-color: #b7ceff;">
+              <div class="card-content">
+                <div class="content">
+                  <label class="label">Uncertainty</label>
+                  <div class="control">
+                    <label class="radio">
+                      <input type="radio" name="uncertainty" value="Small">
+                      Small
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="uncertainty" value="Medium">
+                      Medium
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="uncertainty" value="Large">
+                      Large
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column is-one-third">
+          <div class="field">
+            <div class="card" style="background-color: #d8ffcc;">
+              <div class="card-content">
+                <div class="content">
+                  <label class="label">Complexity</label>
+                  <div class="control">
+                    <label class="radio">
+                      <input type="radio" name="complexity" value="Small">
+                      Small
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="complexity" value="Medium">
+                      Medium
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="complexity" value="Large">
+                      Large
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column is-one-third">
+          <div class="field">
+            <div class="card" style="background-color: #ffffb3;">
+              <div class="card-content">
+                <div class="content">
+                  <label class="label">Effort</label>
+                  <div class="control">
+                    <label class="radio">
+                      <input type="radio" name="effort" value="Small">
+                      Small
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="effort" value="Medium">
+                      Medium
+                    </label>
+                    <label class="radio">
+                      <input type="radio" name="effort" value="Large">
+                      Large
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <div class="points-card">
+            <label class="label points-label">Points</label>
+            <div class="points-display">0</div>
+
+              <div class="columns">
+                <div class="column"></div>
+                <div class="column is-one-quarter">
+                  <canvas id="doughnutChart"></canvas>
+                </div>
+                <div class="column"></div>
+              </div>
+
+            <button class="button is-danger reset-button">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    // Function to calculate the points based on selected values
+    function calculatePoints() {
+      var uncertainty = $('input[name="uncertainty"]:checked').val();
+      var complexity = $('input[name="complexity"]:checked').val();
+      var effort = $('input[name="effort"]:checked').val();
+      var points = 0;
+
+      if (uncertainty && complexity && effort) {
+        if (uncertainty === 'Small') {
+          if (complexity === 'Small') {
+            if (effort === 'Small') {
+              points = 1;
+            } else if (effort === 'Medium') {
+              points = 2;
+            } else if (effort === 'Large') {
+              points = 5;
+            }
+          } else if (complexity === 'Medium') {
+            if (effort === 'Small') {
+              points = 2;
+            } else if (effort === 'Medium') {
+              points = 3;
+            } else if (effort === 'Large') {
+              points = 5;
+            }
+          } else if (complexity === 'Large') {
+            if (effort === 'Small') {
+              points = 3;
+            } else if (effort === 'Medium') {
+              points = 5;
+            } else if (effort === 'Large') {
+              points = 8;
+            }
+          }
+        } else if (uncertainty === 'Medium') {
+          if (complexity === 'Small') {
+            if (effort === 'Small') {
+              points = 3;
+            } else if (effort === 'Medium') {
+              points = 5;
+            } else if (effort === 'Large') {
+              points = 8;
+            }
+          } else if (complexity === 'Medium') {
+            if (effort === 'Small') {
+              points = 5;
+            } else if (effort === 'Medium') {
+              points = 5;
+            } else if (effort === 'Large') {
+              points = 8;
+            }
+          } else if (complexity === 'Large') {
+            if (effort === 'Small') {
+              points = 5;
+            } else if (effort === 'Medium') {
+              points = 8;
+            } else if (effort === 'Large') {
+              points = 8;
+            }
+          }
+        } else if (uncertainty === 'Large') {
+          if (complexity === 'Small') {
+            if (effort === 'Small') {
+              points = 8;
+            } else if (effort === 'Medium') {
+              points = 8;
+            } else if (effort === 'Large') {
+              points = 13;
+            }
+          } else if (complexity === 'Medium') {
+            if (effort === 'Small') {
+              points = 8;
+            } else if (effort === 'Medium') {
+              points = 8;
+            } else if (effort === 'Large') {
+              points = 13;
+            }
+          } else if (complexity === 'Large') {
+            if (effort === 'Small') {
+              points = 13;
+            } else if (effort === 'Medium') {
+              points = 13;
+            } else if (effort === 'Large') {
+              points = 21;
+            }
+          }
+        }
+      }
+
+      $('.points-display').text(points);
+      createOrUpdateDoughnutGraph(points);
+    }
+
+    // Call the calculatePoints function whenever a radio button value changes
+    $('input[name="uncertainty"], input[name="complexity"], input[name="effort"]').change(calculatePoints);
+
+    // Reset the page when the reset button is clicked
+    $('.reset-button').click(function() {
+      $('input[type="radio"]').prop('checked', false);
+      $('.points-display').text('0');
+      createOrUpdateDoughnutGraph(0);
+    });
+  </script>
+
+<script>
+  var doughnutChart = null;
+
+  // Create or update the doughnut graph
+  function createOrUpdateDoughnutGraph(numericValue) {
+    var subtractedValue = 21 - numericValue;
+
+    if (doughnutChart) {
+      doughnutChart.data.datasets[0].data = [numericValue, subtractedValue];
+      doughnutChart.data.datasets[0].backgroundColor = ['#FF6384', '#eeeeee'];
+      doughnutChart.update();
+    } else {
+      var ctx = document.getElementById('doughnutChart').getContext('2d');
+      doughnutChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [],
+          datasets: [{
+            data: [numericValue, subtractedValue],
+            backgroundColor: ['#FF6384', '#eeeeee']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          legend: {
+            display: false
+          },
+          tooltips: {
+            enabled: false
+          },
+          plugins: {
+            datalabels: {
+              display: false // Turn off labels on segments
+            }
+          }
+        }
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
