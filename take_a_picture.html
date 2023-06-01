@@ -43,7 +43,7 @@
               <div class="card-image">
                 <img id="captured-picture">
               </div>
-              <div id="metadata">?</div>
+              <div id="metadata">META Data:</div>
             </div>
           </div>
         </div>
@@ -56,16 +56,37 @@
     // Check if the browser supports the MediaDevices API
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       // Access the camera
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(function (stream) {
-          var video = document.getElementById('camera-preview');
-          // Set the video source to the camera stream
-          video.srcObject = stream;
-          // Play the video
-          video.play();
+      navigator.mediaDevices.enumerateDevices()
+        .then(function (devices) {
+          var videoDevices = devices.filter(function (device) {
+            return device.kind === 'videoinput';
+          });
+
+          // Select the desired camera by deviceId
+          var selectedDeviceId = videoDevices[0].deviceId; // Change index as needed
+
+          // Set the constraints to use the selected camera
+          var constraints = {
+            video: {
+              deviceId: { exact: selectedDeviceId }
+            }
+          };
+
+          // Access the camera with the selected constraints
+          navigator.mediaDevices.getUserMedia(constraints)
+            .then(function (stream) {
+              var video = document.getElementById('camera-preview');
+              // Set the video source to the camera stream
+              video.srcObject = stream;
+              // Play the video
+              video.play();
+            })
+            .catch(function (error) {
+              console.error('Error accessing the camera:', error);
+            });
         })
         .catch(function (error) {
-          console.error('Error accessing the camera:', error);
+          console.error('Error enumerating devices:', error);
         });
     } else {
       console.error('MediaDevices API not supported');
@@ -83,15 +104,14 @@
       canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
       // Convert the canvas content to a data URL
       var pictureDataUrl = canvas.toDataURL();
-
       // Set the captured picture as the source for the image element
       var capturedPicture = document.getElementById('captured-picture');
       capturedPicture.src = pictureDataUrl;
 
-      // Get the metadata of the picture
+      // Retrieve metadata from the picture
       var reader = new FileReader();
-      reader.onload = function (e) {
-        var buffer = e.target.result;
+      reader.onload = function () {
+        var buffer = reader.result;
         var exifData = EXIF.readFromBinaryFile(buffer);
         var metadataContainer = document.getElementById('metadata');
         metadataContainer.innerHTML = JSON.stringify(exifData, null, 2);
