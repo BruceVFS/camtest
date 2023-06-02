@@ -44,7 +44,7 @@
               <div class="card-image">
                 <img id="captured-picture">
               </div>
-              <div id="metadata">Device Info</div>
+              <div id="metadata">Device Information</div>
             </div>
           </div>
         </div>
@@ -100,7 +100,7 @@
         var exifData = EXIF.readFromBinaryFile(buffer);
 
         // Use MobileDetect library to detect device information
-        var md = new MobileDetect(window.navigator.userAgent);
+        var md = new MobileDetect();
         var fingerprint;
         new Fingerprint2().get(function (result) {
           fingerprint = result;
