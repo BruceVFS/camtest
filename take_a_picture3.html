@@ -44,18 +44,13 @@
               <div class="card-image">
                 <img id="captured-picture">
               </div>
-              <div id="metadata">Device Info3</div>
+              <div id="metadata">!Device Info!</div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
-
-  <!-- Additional Dependencies -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fingerprintjs2/2.1.0/fingerprint2.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mobile-detect/1.4.6/mobile-detect.min.js"></script>
 
   <script>
     // Check if the browser supports the MediaDevices API
@@ -94,65 +89,21 @@
       capturedPicture.src = pictureDataUrl;
 
       // Get the metadata of the picture
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        var buffer = e.target.result;
-        var exifData = EXIF.readFromBinaryFile(buffer);
-
-        // Use MobileDetect library to detect device information
-        var md = new MobileDetect();
-        var fingerprint;
-        new Fingerprint2().get(function (result) {
-          fingerprint = result;
-          var metadataContainer = document.getElementById('metadata');
-          var deviceInfo = {
-            'User Agent': navigator.userAgent,
-            'Screen Dimensions': {
-              'Width': screen.width,
-              'Height': screen.height
-            },
-            'Browser Information': {
-              'Name': navigator.appName,
-              'Version': navigator.appVersion,
-              'Language': navigator.language
-            },
-            'Geolocation': {
-              'Latitude': '',
-              'Longitude': ''
-            },
-            'Device Orientation': '',
-            'Network Information': {
-              'Connection Type': navigator.connection ? navigator.connection.type : 'N/A',
-              'Connection Speed': navigator.connection ? navigator.connection.downlink : 'N/A'
-            },
-            'Battery Status': {
-              'Level': navigator.getBattery ? navigator.getBattery().level : 'N/A',
-              'Charging': navigator.getBattery ? navigator.getBattery().charging : 'N/A'
-            },
-            'Device Information': {
-              'Mobile': md.mobile() || 'N/A',
-              'Tablet': md.tablet() || 'N/A',
-              'Desktop': md.desktop() || 'N/A',
-              'OS': md.os() || 'N/A',
-              'Fingerprint': fingerprint || 'N/A'
-            }
-          };
-
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-              deviceInfo['Geolocation']['Latitude'] = position.coords.latitude;
-              deviceInfo['Geolocation']['Longitude'] = position.coords.longitude;
-              metadataContainer.innerHTML = JSON.stringify(deviceInfo, null, 2);
-            }, function (error) {
-              console.error('Error retrieving geolocation:', error);
-              metadataContainer.innerHTML = JSON.stringify(deviceInfo, null, 2);
-            });
-          } else {
-            metadataContainer.innerHTML = JSON.stringify(deviceInfo, null, 2);
-          }
-        });
+      var metadataContainer = document.getElementById('metadata');
+      var deviceInfo = {
+        'User Agent': navigator.userAgent,
+        'Screen Dimensions': {
+          'Width': screen.width,
+          'Height': screen.height
+        },
+        'Browser Information': {
+          'Name': navigator.appName,
+          'Version': navigator.appVersion,
+          'Language': navigator.language
+        }
       };
-      reader.readAsArrayBuffer(capturedPicture.src);
+
+      metadataContainer.innerHTML = JSON.stringify(deviceInfo, null, 2);
     });
   </script>
 </body>
