@@ -44,7 +44,7 @@
               <div class="card-image">
                 <img id="captured-picture">
               </div>
-              <div id="metadata">Device Information</div>
+              <div id="metadata">Device Info3</div>
             </div>
           </div>
         </div>
@@ -130,11 +130,11 @@
               'Charging': navigator.getBattery ? navigator.getBattery().charging : 'N/A'
             },
             'Device Information': {
-              'Mobile': md.mobile(),
-              'Tablet': md.tablet(),
-              'Desktop': md.desktop(),
-              'OS': md.os(),
-              'Fingerprint': fingerprint
+              'Mobile': md.mobile() || 'N/A',
+              'Tablet': md.tablet() || 'N/A',
+              'Desktop': md.desktop() || 'N/A',
+              'OS': md.os() || 'N/A',
+              'Fingerprint': fingerprint || 'N/A'
             }
           };
 
