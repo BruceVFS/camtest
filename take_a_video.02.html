@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Camera Access Example</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+  <style>
+    #camera-preview {
+      width: 100%;
+      height: auto;
+    }
+    #captured-video {
+      max-width: 100%;
+      max-height: 100%;
+      margin-top: 10px;
+    }
+    #metadata {
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Camera Access Example</h1>
+      <div class="columns">
+        <div class="column">
+          <div class="card">
+            <div class="card-content">
+              <h2 class="title is-4">Camera View</h2>
+              <div class="card-image">
+                <video id="camera-preview" autoplay></video>
+              </div>
+              <div class="card-footer">
+                <button id="record-video" class="button is-primary">Record Video</button> &nbsp
+                <button id="stop-video" class="button is-danger" disabled>Stop Recording</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card">
+            <div class="card-content">
+              <h2 class="title is-4">Captured Video</h2>
+              <div class="card-image">
+                <video id="captured-video" controls></video>
+              </div>
+              <button id="save-video-button" class="button is-primary">Save Video</button>
+              <div id="metadata">Recorded Video</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Check if the browser supports the MediaDevices API
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      // Access the camera
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(function (stream) {
+          var video = document.getElementById('camera-preview');
+          // Set the video source to the camera stream
+          video.srcObject = stream;
+          // Play the video
+          video.play();
+        })
+        .catch(function (error) {
+          console.error('Error accessing the camera:', error);
+        });
+    } else {
+      console.error('MediaDevices API not supported');
+    }
+
+    // Record video when the button is clicked
+    var recordVideoButton = document.getElementById('record-video');
+    var stopVideoButton = document.getElementById('stop-video');
+    var mediaRecorder;
+    var chunks = []; // To store video data in chunks
+    var countdownInterval; // To hold the countdown interval
+
+    recordVideoButton.addEventListener('click', function () {
+      var video = document.getElementById('camera-preview');
+
+      // Disable the record button and enable the stop button
+      recordVideoButton.disabled = true;
+      stopVideoButton.disabled = false;
+
+      // Create a MediaRecorder instance
+      mediaRecorder = new MediaRecorder(video.srcObject);
+
+      // Start recording video
+      mediaRecorder.start();
+
+      // Stop recording after 10 seconds
+      setTimeout(function() {
+        mediaRecorder.stop();
+      }, 10000);
+
+      // Create and display the countdown element on the stop button
+      var countdownElement = document.createElement('span');
+      countdownElement.id = 'countdown';
+      countdownElement.style.fontSize = '1.0rem';
+      countdownElement.style.marginLeft = '10px';
+      countdownElement.innerText = 'Time Left: 10s';
+
+      stopVideoButton.appendChild(countdownElement);
+
+      // Update time left every second
+      var timeLeft = 10;
+      countdownInterval = setInterval(function() {
+        timeLeft--;
+        countdownElement.innerText = 'Time Left: ' + timeLeft + 's';
+
+        if (timeLeft <= 0) {
+          // Stop recording and clear the countdown
+          clearInterval(countdownInterval);
+          mediaRecorder.stop();
+          countdownElement.innerText = 'Recording Stopped - Reset';
+        }
+      }, 1000);
+
+      // Event handler for data available during recording
+      mediaRecorder.ondataavailable = function (event) {
+        chunks.push(event.data);
+      };
+
+      // Event handler for when recording is stopped
+      mediaRecorder.onstop = function () {
+        // Create a new video element to display the captured video
+        var capturedVideo = document.createElement('video');
+        capturedVideo.id = 'captured-video';
+        capturedVideo.controls = true;
+
+        // Combine all video data chunks into a single Blob
+        var videoBlob = new Blob(chunks, { type: chunks[0].type });
+
+        // Create a URL for the Blob
+        var videoUrl = URL.createObjectURL(videoBlob);
+
+        // Set the captured video as the source for the video element
+        capturedVideo.src = videoUrl;
+
+        // Replace the existing video element with the captured video
+        var existingVideo = document.getElementById('captured-video');
+        existingVideo.parentNode.replaceChild(capturedVideo, existingVideo);
+
+        // Get the metadata of the video
+        var metadataContainer = document.getElementById('metadata');
+        var deviceInfo = {
+          'User Agent': navigator.userAgent,
+          'Screen Dimensions': {
+            'Width': screen.width,
+            'Height': screen.height
+          },
+          'Browser Information': {
+            'Name': navigator.appName,
+            'Version': navigator.appVersion,
+            'Language': navigator.language
+          }
+        };
+
+        metadataContainer.innerHTML = JSON.stringify(deviceInfo, null, 2);
+
+        // Save the video locally when the button is clicked
+        var saveVideoButton = document.getElementById('save-video-button');
+        saveVideoButton.addEventListener('click', function () {
+          // Create a download link element
+          var downloadLink = document.createElement('a');
+          downloadLink.href = videoUrl;
+          downloadLink.download = 'captured_video.webm'; // Set the desired file name and extension
+
+          // Append the link to the document body
+          document.body.appendChild(downloadLink);
+
+          // Programmatically click the link to start the download
+          downloadLink.click();
+
+          // Remove the link from the document body
+          document.body.removeChild(downloadLink);
+        });
+      };
+    });
+
+    // Stop video recording when the button is clicked
+    stopVideoButton.addEventListener('click', function() {
+      // Disable the stop button and enable the record button
+      stopVideoButton.disabled = true;
+      recordVideoButton.disabled = false;
+
+      // Clear the countdown and stop recording
+      var countdownElement = document.getElementById('countdown');
+      clearInterval(countdownInterval);
+      mediaRecorder.stop();
+
+      // Remove the countdown from the stop button
+      countdownElement.remove();
+    });
+  </script>
+</body>
+</html>
