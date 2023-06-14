@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <title>Grooming Questions</title>
+
+  <style>
+    .green-bg { background-color: #D9FBE5; }
+    .red-bg { background-color: #FFBFBF; }
+    th, td {
+      font-weight: bold;
+      text-align: center;
+      border: none; /* Remove all borders for <td> elements */
+    }
+    tr {
+      border-top: 1px solid black; /* Add thin, black border at the bottom of <tr> elements */
+      border-bottom: 1px solid black; /* Add thin, black border at the bottom of <tr> elements */
+    }
+    td:nth-child(1) {
+      border: none; /* Remove all borders for <td> elements */
+    }
+    td:nth-child(2) {
+      font-size: 68px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none; /* Remove all borders for <td> elements */
+    }
+    td:nth-child(3) {
+      border: none; /* Remove all borders for <td> elements */
+    }
+
+
+  </style>
+  
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Grooming Questions</h1>
+      <div class="table-container">
+        <table class="table is-fullwidth">
+          <colgroup>
+            <col style="width: 40%;">
+            <col style="width: 20%;">
+            <col style="width: 40%;">
+          </colgroup>
+          <thead style="background-color: #F4ECCF;">
+            <tr>
+              <th>Question</th>
+              <th style="text-align: center;">Yes/No</th>
+
+              <th>Comments</th>
+            </tr>
+          </thead>
+                    
+          <tbody>
+            <tr>
+              <td>1. Do I understand this ticket enough to work on it?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question1" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question1" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>2. Is the integration well documented?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question2" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question2" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>2a. Do we have a design?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question2a" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question2a" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>2b. Can we do it ourselves?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question2b" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question2b" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>3. Is the design approved by UX or PO?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question3" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question3" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>4. Do we know what's in and what's out of scope?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question4" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question4" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>5. Does anyone think we cannot build this? (Why?)</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question5" value="yes">
+                    We can
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question5" value="no">
+                    We can't
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>6. Does this fit into the current architecture?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question6" value="yes">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question6" value="no">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>6a. Can it be better?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question6a" value="no">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question6a" value="yes">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+            <tr>
+              <td>7. Is there technical debt and how are we going to manage it?</td>
+              <td>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="question7" value="no">
+                    Yes
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="question7" value="yes">
+                    No
+                  </label>
+                </div>
+              </td>
+              <td>
+                <textarea class="textarea" rows="2" placeholder="Enter comments"></textarea>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const rows = document.querySelectorAll("tbody tr");
+
+    rows.forEach((row) => {
+      const radios = row.querySelectorAll("input[type='radio']");
+      const commentsTextarea = row.querySelector("textarea");
+
+      radios.forEach((radio) => {
+        radio.addEventListener("change", () => {
+          const cell = radio.closest("td");
+
+          if (radio.value === "yes") {
+            cell.classList.remove("red-bg");
+            cell.classList.add("green-bg");
+            commentsTextarea.classList.remove("red-bg");
+            commentsTextarea.classList.remove("green-bg");
+          } else if (radio.value === "no") {
+            cell.classList.remove("green-bg");
+            cell.classList.add("red-bg");
+            commentsTextarea.classList.remove("green-bg");
+            commentsTextarea.classList.add("red-bg");
+          }
+        });
+      });
+    });
+  </script>
+  
+</body>
+</html>
