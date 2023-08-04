@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pro Rata Calculator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <!-- Add the flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Pro Rata Calculator</h1>
+      <div class="field">
+        <label class="label">Effective Date of Policy</label>
+        <div class="control">
+          <input class="input" type="text" id="effectiveDate" readonly>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Monthly Premium</label>
+        <div class="control">
+          <input class="input" type="number" id="monthlyPremium" step="0.01" oninput="validateInputs()">
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <button class="button is-primary" id="calculateButton" onclick="calculateProRata()" disabled>Calculate</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Pro Rata Amount</label>
+        <div class="control">
+          <input class="input" type="text" id="proRataAmount" readonly>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Daily Rate for Pro Rata Value</label>
+        <div class="control">
+          <input class="input" type="text" id="dailyRate" readonly>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Add the flatpickr script -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    const calculateButton = document.getElementById("calculateButton");
+    const monthlyPremiumInput = document.getElementById("monthlyPremium");
+
+    // Initialize flatpickr for the date picker
+    flatpickr("#effectiveDate", {
+      dateFormat: "Y-m-d",
+      minDate: "today", // Restrict selecting past dates
+      maxDate: new Date().fp_incr(30), // Restrict selecting dates more than 30 days in the future
+      allowInput: false, // Disable direct text input in the date picker
+      onChange: function(selectedDates) {
+        validateInputs();
+      }
+    });
+
+    function validateInputs() {
+      const effectiveDate = document.getElementById("effectiveDate").value;
+      const monthlyPremium = monthlyPremiumInput.value;
+
+      if (effectiveDate !== "" && monthlyPremium !== "") {
+        calculateButton.removeAttribute("disabled");
+      } else {
+        calculateButton.setAttribute("disabled", "disabled");
+      }
+    }
+
+function calculateProRata() {
+  const effectiveDate = new Date(document.getElementById("effectiveDate").value);
+  const monthlyPremium = parseFloat(monthlyPremiumInput.value);
+  const daysInMonth = new Date(effectiveDate.getFullYear(), effectiveDate.getMonth() + 1, 0).getDate();
+  let totalDaysInMonth = daysInMonth - effectiveDate.getDate() + 1;
+
+
+  const daysTillEffectiveDate = Math.ceil((effectiveDate - new Date()) / (1000 * 60 * 60 * 24));
+
+  if (daysTillEffectiveDate <= 0) {
+    alert("Invalid effective date. Please choose a date in the future.");
+    return;
+  }
+
+  const leapYear = new Date(effectiveDate.getFullYear(), 1, 29).getMonth() === 1;
+
+  const dailyPremium = monthlyPremium * 12 / (leapYear ? 366 : 365);
+  const proRataAmount = Math.round(dailyPremium * totalDaysInMonth * 100) / 100;
+
+  const dailyRate = proRataAmount / daysTillEffectiveDate;
+
+  document.getElementById("proRataAmount").value = proRataAmount.toFixed(2);
+  document.getElementById("dailyRate").value = dailyRate.toFixed(2);
+
+  // Create a table to display the variables and their values
+  const table = document.createElement("table");
+  table.border = "1";
+  table.innerHTML = `
+    <tr>
+      <th>Variable</th>
+      <th>Value</th>
+    </tr>
+    <tr>
+      <td>effectiveDate</td>
+      <td>${effectiveDate}</td>
+    </tr>
+    <tr>
+      <td>monthlyPremium</td>
+      <td>${monthlyPremium}</td>
+    </tr>
+    <tr>
+      <td>daysInMonth</td>
+      <td>${daysInMonth}</td>
+    </tr>
+    <tr>
+      <td>totalDaysInMonth</td>
+      <td>${totalDaysInMonth}</td>
+    </tr>
+    <tr>
+      <td>daysTillEffectiveDate</td>
+      <td>${daysTillEffectiveDate}</td>
+    </tr>
+    <tr>
+      <td>leapYear</td>
+      <td>${leapYear}</td>
+    </tr>
+    <tr>
+      <td>dailyPremium</td>
+      <td>${dailyPremium}</td>
+    </tr>
+    <tr>
+      <td>proRataAmount</td>
+      <td>${proRataAmount.toFixed(2)}</td>
+    </tr>
+    <tr>
+      <td>dailyRate</td>
+      <td>${dailyRate.toFixed(2)}</td>
+    </tr>
+  `;
+
+  document.body.appendChild(table);
+}
+
+  </script>
+</body>
+</html>
