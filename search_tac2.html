@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>T.A.C. Search</title>
+  <title>T.A.C.2. Search</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -40,14 +40,21 @@
     th {
       background-color: #f2f2f2;
     }
+
+    /* Adjust the size of the input field */
+    .input {
+      width: 200px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">T.A.C. Search</h1>
+    <h1 class="title is-4">T.A.C.2. Search</h1>
     <div class="field has-addons search-input">
-      <div class="control is-expanded">
+      <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" onkeyup="handleSearchInput()">
+      </div>
+      <div class="control">
         <button class="button is-danger search-clear-button" onclick="clearSearch()" id="clearButton">Clear</button>
       </div>
       <div class="control">
@@ -68,6 +75,11 @@
         clearButton.classList.remove('is-hidden');
       } else {
         clearButton.classList.add('is-hidden');
+      }
+
+      // Auto-lookup after the third character is typed
+      if (searchInput.value.length >= 3) {
+        searchCSV();
       }
     }
 
