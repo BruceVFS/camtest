@@ -4,7 +4,7 @@
   <title>CSV Search</title>
 </head>
 <body>
-  <label for="searchInput">Search:</label>
+  <label for="searchInput">Search2:</label>
   <input type="text" id="searchInput" placeholder="Enter search text">
   <button onclick="searchCSV()">Search</button>
   <div id="searchResults"></div>
@@ -30,12 +30,12 @@
 
               // Parse the CSV data
               const lines = csvData.split('\n');
-              const headers = lines[0].split(','); // Ensure correct CSV parsing here
+              const headers = lines[0].split(',').map(header => header.trim()); // Trim the headers
               const searchFields = ['product_code', 'serial_number', 'product_description'];
               const results = [];
 
               for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',');
+                const values = lines[i].split(',').map(value => value.trim()); // Trim the values
 
                 // Check if the search text matches any of the search fields
                 if (searchFields.some(field => headers.includes(field) && values[headers.indexOf(field)].toLowerCase().includes(searchText))) {
