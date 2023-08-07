@@ -4,7 +4,7 @@
   <title>CSV Search</title>
 </head>
 <body>
-  <label for="searchInput">Search4:</label>
+  <label for="searchInput">Search:</label>
   <input type="text" id="searchInput" placeholder="Enter search text">
   <button onclick="searchCSV()">Search</button>
   <div id="searchResults"></div>
@@ -45,7 +45,7 @@
                 // Check if the values array has the same number of elements as the headers array
                 if (values.length !== headers.length) {
                   console.error(`Mismatch in the number of elements in line ${i + 1} of the CSV file.`);
-                  continue;
+                  continue; // Skip this line and move to the next one
                 }
 
                 // Check if the search text matches any of the search fields
