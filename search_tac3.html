@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>*** T.A.C. Search</title>
+  <title>IV T.A.C. Search</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">*** T.A.C. Search</h1>
+    <h1 class="title is-4">IV T.A.C. Search</h1>
     <div class="field has-addons search-input">
       <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" oninput="handleSearchInput()">
@@ -76,27 +76,31 @@
       debounceTimer = setTimeout(func, delay);
     }
 
-    function handleSearchInput() {
-      debounce(function() {
-        const searchInput = document.getElementById('searchInput');
-        const clearButton = document.getElementById('clearButton');
+function handleSearchInput() {
+  debounce(function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearButton = document.getElementById('clearButton');
 
-        // Show the clear button all the time
-        if (searchInput.value.length > 0) {
-          clearButton.classList.remove('is-hidden');
-        } else {
-          clearButton.classList.add('is-hidden');
-        }
-
-        const inputValue = searchInput.value;
-
-        if (/^\d+$/.test(inputValue) && inputValue.length >= 5) {
-          searchCSV();
-        } else if (/^[a-zA-Z0-9]+$/.test(inputValue) && inputValue.length >= 3) {
-          searchCSV();
-        }
-      }, 300); // Adjust the debounce delay as needed
+    // Show the clear button all the time
+    if (searchInput.value.length > 0) {
+      clearButton.classList.remove('is-hidden');
+    } else {
+      clearButton.classList.add('is-hidden');
     }
+
+    const inputValue = searchInput.value;
+
+    console.log('Input value:', inputValue);
+    console.log('Is numeric:', /^\d+$/.test(inputValue));
+    console.log('Is alphanumeric:', /^[a-zA-Z0-9]+$/.test(inputValue));
+
+    if (/^\d+$/.test(inputValue) && inputValue.length >= 5) {
+      searchCSV();
+    } else if (/^[a-zA-Z0-9]+$/.test(inputValue) && inputValue.length >= 3) {
+      searchCSV();
+    }
+  }, 300); // Adjust the debounce delay as needed
+}
 
     function searchCSV() {
       const searchInput = document.getElementById('searchInput');
