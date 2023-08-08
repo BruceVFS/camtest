@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>T.A.C. Search I.I.I</title>
+  <title>T.A.C. Search III</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">T.A.C. Search I.I.I</h1>
+    <h1 class="title is-4">T.A.C. Search III</h1>
     <div class="field has-addons search-input">
       <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" oninput="handleSearchInput()">
@@ -92,7 +92,9 @@ function handleSearchInput() {
 
     console.log('Input value:', inputValue);
 
-    if (/^\d{5,}$/.test(inputValue)) {
+    if (/^\d+$/.test(inputValue) && inputValue.length < 5) {
+      // Do nothing for numeric input until it reaches 5 characters
+    } else if (/^\d{5,}$/.test(inputValue)) {
       searchCSV();
     } else if (/^[a-zA-Z0-9]{3,}$/.test(inputValue)) {
       searchCSV();
