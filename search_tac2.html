@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>* T.A.C. Search</title>
+  <title>** T.A.C. Search</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">* T.A.C. Search</h1>
+    <h1 class="title is-4">** T.A.C. Search</h1>
     <div class="field has-addons search-input">
       <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" onkeyup="handleSearchInput()">
@@ -141,9 +141,12 @@
       // Replace 'search_sample.csv' with the actual path to your CSV file
       xhr.open('GET', 'search_sample.csv', true);
       xhr.send();
+
+        // Call displayResults with searchText as an argument
+        displayResults(results, searchText);
     }
 
-function displayResults(results) {
+function displayResults(results, searchText) {
   const searchResults = document.getElementById('searchResults');
   let html = '';
   if (results.length > 0) {
