@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>T.A.C. Search</title>
+  <title>* T.A.C. Search</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -23,6 +23,10 @@
     }
     .search-results {
       margin-top: 20px;
+    }
+    .highlight {
+      background-color: yellow;
+      font-weight: bold;
     }
     .table-container {
       overflow-x: auto;
@@ -49,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">T.A.C. Search</h1>
+    <h1 class="title is-4">* T.A.C. Search</h1>
     <div class="field has-addons search-input">
       <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" onkeyup="handleSearchInput()">
@@ -139,31 +143,34 @@
       xhr.send();
     }
 
-    function displayResults(results) {
-      const searchResults = document.getElementById('searchResults');
-      let html = '';
-      if (results.length > 0) {
-        html = '<table border="1"><tr>';
-        Object.keys(results[0]).forEach(key => {
-          html += `<th>${key}</th>`;
-        });
-        html += '</tr>';
+function displayResults(results) {
+  const searchResults = document.getElementById('searchResults');
+  let html = '';
+  if (results.length > 0) {
+    html = '<table border="1"><tr>';
+    Object.keys(results[0]).forEach(key => {
+      html += `<th>${key}</th>`;
+    });
+    html += '</tr>';
 
-        results.forEach(result => {
-          html += '<tr>';
-          Object.values(result).forEach(value => {
-            html += `<td>${value}</td>`;
-          });
-          html += '</tr>';
-        });
+    results.forEach(result => {
+      html += '<tr>';
+      Object.entries(result).forEach(([key, value]) => {
+        // Highlight matching strings in the value
+        const highlightedValue = value.replace(new RegExp(searchText, 'gi'), match => `<span class="highlight">${match}</span>`);
+        html += `<td>${highlightedValue}</td>`;
+      });
+      html += '</tr>';
+    });
 
-        html += '</table>';
-      } else {
-        html = '<p>No results found.</p>';
-      }
+    html += '</table>';
+  } else {
+    html = '<p>No results found.</p>';
+  }
 
-      searchResults.innerHTML = html;
-    }
+  searchResults.innerHTML = html;
+}
+
 
     function clearSearch() {
       const searchInput = document.getElementById('searchInput');
