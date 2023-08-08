@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>T.A.C. Search I.I.I.</title>
+  <title>T.A.C. Search I.I.I</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -53,7 +53,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">T.A.C. Search I.I.I.</h1>
+    <h1 class="title is-4">T.A.C. Search I.I.I</h1>
     <div class="field has-addons search-input">
       <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" oninput="handleSearchInput()">
@@ -96,6 +96,8 @@ function handleSearchInput() {
       searchCSV();
     } else if (/^[a-zA-Z0-9]{3,}$/.test(inputValue)) {
       searchCSV();
+    } else {
+      // Clear search results or handle other cases
     }
   }, 300); // Adjust the debounce delay as needed
 }
