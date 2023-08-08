@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <title>Generate GUIDs</title>
+  <style>
+    .generating-button {
+      background-color: red !important;
+    }
+
+    #cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #f0f0f0;
+      padding: 10px;
+      text-align: center;
+      display: block;
+    }
+
+    #cookie-contents {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="cookie-banner" style="display: none;">
+    <p>This website uses cookies to enhance your experience. By continuing to use this site, you consent to our use of cookies. <a href="#" onclick="consentGiven();">Got it!</a></p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <h1 class="title">Generate GUIDs</h1>
+      <button id="generateButton" class="button is-primary">Generate GUIDs</button>
+      <div id="guidsContainer" class="mt-0"></div>
+    </div>
+  </section>
+
+  <div id="cookie-contents"></div>
+
+  <script>
+    function setCookie(name, value, days) {
+      var expires = "";
+      if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    }
+
+			function getCookie(name) {
+			  var cookieValue = null;
+			  if (document.cookie && document.cookie !== '') {
+			    var cookies = document.cookie.split(';');
+			    for (var i = 0; i < cookies.length; i++) {
+			      var cookie = cookies[i].trim();
+			      // Check if the cookie starts with the specified name
+			      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+			        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+			        break;
+			      }
+			    }
+			  }
+			  return cookieValue;
+			}
+
+    function consentGiven() {
+      setCookie('consent', 'true', 365);
+      document.getElementById('cookie-banner').style.display = 'none';
+      showCookieContents();
+    }
+
+    function showCookieContents() {
+      var cookieContents = getCookie('consent');
+      var cookieContainer = document.getElementById('cookie-contents');
+      cookieContainer.textContent = 'Cookie contents Now: ' + cookieContents;
+    }
+
+    window.onload = function() {
+      var consentCookie = getCookie('consent');
+      if (consentCookie !== 'true') {
+        document.getElementById('cookie-banner').style.display = 'block';
+      } else {
+        showCookieContents();
+      }
+    };
+
+    // Generate a single GUID
+    function generateGUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+          v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // Generate multiple GUIDs with delay
+    function generateGUIDsWithDelay(count, delay) {
+      var guids = [];
+      var currentIndex = 0;
+
+      function generateNextGUID() {
+        if (currentIndex < count) {
+          guids.push(generateGUID());
+          currentIndex++;
+          setTimeout(generateNextGUID, delay);
+        } else {
+          buildPage(guids);
+        }
+      }
+
+      generateNextGUID();
+    }
+
+    // Copy GUID to clipboard and strike out when clicked
+    function copyToClipboard(guidElement) {
+      var tempInput = document.createElement('input');
+      tempInput.value = guidElement.textContent;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+
+      guidElement.style.textDecoration = 'line-through';
+    }
+
+    // Build page with GUIDs
+    function buildPage(guids) {
+      var guidsContainer = document.getElementById('guidsContainer');
+      guidsContainer.innerHTML = ''; // Clear previous GUIDs
+
+      guids.forEach(function(guid, index) {
+        setTimeout(function() {
+          var guidElement = document.createElement('div');
+          guidElement.className = 'box';
+
+          var guidText = document.createElement('span');
+          guidText.textContent = guid;
+          guidElement.appendChild(guidText);
+
+          var copyButton = document.createElement('button');
+          copyButton.className = 'button is-small ml-2';
+          copyButton.textContent = 'Copy to Clipboard';
+          guidElement.appendChild(copyButton);
+
+          copyButton.addEventListener('click', function() {
+            copyToClipboard(guidText);
+          });
+
+          guidsContainer.appendChild(guidElement);
+
+          // Change button text back once page is fully built
+          if (index === guids.length - 1) {
+            var generateButton = document.getElementById('generateButton');
+            generateButton.textContent = 'Generate GUIDs';
+            generateButton.classList.remove('generating-button');
+            generateButton.disabled = false;
+          }
+        }, index * 100); // Delay of 0.1 seconds (100 milliseconds)
+      });
+    }
+
+    // Handle button click event
+    document.getElementById('generateButton').addEventListener('click', function() {
+      var generateButton = document.getElementById('generateButton');
+      generateButton.textContent = 'GENERATING';
+      generateButton.classList.add('generating-button');
+      generateButton.disabled = true;
+
+      generateGUIDsWithDelay(20, 100);
+    });
+  </script>
+
+</body>
+
+</html>
