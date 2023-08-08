@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>** T.A.C. Search</title>
+  <title>!T.A.C. Search</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
   <style>
     body {
@@ -53,12 +53,11 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title is-4">** T.A.C. Search</h1>
+    <h1 class="title is-4">!T.A.C. Search</h1>
     <div class="field has-addons search-input">
       <div class="control">
         <input class="input" type="text" id="searchInput" placeholder="Enter search text" onkeyup="handleSearchInput()">
       </div>
-    <div class="field has-addons search-input">
       <div class="control">
         <button class="button is-danger" onclick="clearSearch()" id="clearButton">Clear</button>
       </div>
@@ -66,24 +65,20 @@
         <button class="button is-primary" onclick="searchCSV()">Search</button>
       </div>
     </div>
-    </div>
     <div class="search-results" id="searchResults"></div>
   </div>
 
   <script>
-    // Define handleSearchInput() function globally
     function handleSearchInput() {
       const searchInput = document.getElementById('searchInput');
       const clearButton = document.getElementById('clearButton');
 
-      // Show the clear button all the time
       if (searchInput.value.length > 0) {
         clearButton.classList.remove('is-hidden');
       } else {
         clearButton.classList.add('is-hidden');
       }
 
-      // Auto-lookup after the third character is typed
       if (searchInput.value.length >= 3) {
         searchCSV();
       }
@@ -93,14 +88,12 @@
       const searchInput = document.getElementById('searchInput');
       const searchText = searchInput.value.toLowerCase();
 
-      // Fetch the CSV file using AJAX
       const xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE) {
           if (xhr.status === 200) {
             const csvData = xhr.responseText;
 
-            // Parse the CSV data
             const lines = csvData.split('\n');
             if (lines.length < 2) {
               console.error('CSV file does not have enough data.');
@@ -114,13 +107,11 @@
             for (let i = 1; i < lines.length; i++) {
               const values = lines[i].split(',').map(value => value.trim());
 
-              // Check if the values array has the same number of elements as the headers array
               if (values.length !== headers.length) {
                 console.error(`Mismatch in the number of elements in line ${i + 1} of the CSV file.`);
-                continue; // Skip this line and move to the next one
+                continue;
               }
 
-              // Check if the search text matches any of the search fields
               if (searchFields.some(field => headers.includes(field) && values[headers.indexOf(field)].toLowerCase().includes(searchText))) {
                 const entry = {};
                 for (let j = 0; j < headers.length; j++) {
@@ -130,58 +121,49 @@
               }
             }
 
-            // Display the search results
-            displayResults(results);
+            displayResults(results, searchText);
           } else {
             console.error('Failed to fetch the CSV file.');
           }
         }
       };
 
-      // Replace 'search_sample.csv' with the actual path to your CSV file
       xhr.open('GET', 'search_sample.csv', true);
       xhr.send();
-
-        // Call displayResults with searchText as an argument
-        displayResults(results, searchText);
     }
 
-function displayResults(results, searchText) {
-  const searchResults = document.getElementById('searchResults');
-  let html = '';
-  if (results.length > 0) {
-    html = '<table border="1"><tr>';
-    Object.keys(results[0]).forEach(key => {
-      html += `<th>${key}</th>`;
-    });
-    html += '</tr>';
+    function displayResults(results, searchText) {
+      const searchResults = document.getElementById('searchResults');
+      let html = '';
+      if (results.length > 0) {
+        html = '<table border="1"><tr>';
+        Object.keys(results[0]).forEach(key => {
+          html += `<th>${key}</th>`;
+        });
+        html += '</tr>';
 
-    results.forEach(result => {
-      html += '<tr>';
-      Object.entries(result).forEach(([key, value]) => {
-        // Highlight matching strings in the value
-        const highlightedValue = value.replace(new RegExp(searchText, 'gi'), match => `<span class="highlight">${match}</span>`);
-        html += `<td>${highlightedValue}</td>`;
-      });
-      html += '</tr>';
-    });
+        results.forEach(result => {
+          html += '<tr>';
+          Object.entries(result).forEach(([key, value]) => {
+            const highlightedValue = value.replace(new RegExp(searchText, 'gi'), match => `<span class="highlight">${match}</span>`);
+            html += `<td>${highlightedValue}</td>`;
+          });
+          html += '</tr>';
+        });
 
-    html += '</table>';
-  } else {
-    html = '<p>No results found.</p>';
-  }
+        html += '</table>';
+      } else {
+        html = '<p>No results found.</p>';
+      }
 
-  searchResults.innerHTML = html;
-}
-
+      searchResults.innerHTML = html;
+    }
 
     function clearSearch() {
       const searchInput = document.getElementById('searchInput');
       searchInput.value = '';
-      // Hide the clear button when clearing the search input
       const clearButton = document.getElementById('clearButton');
       clearButton.classList.add('is-hidden');
-      // Clear the search results
       const searchResults = document.getElementById('searchResults');
       searchResults.innerHTML = '';
     }
