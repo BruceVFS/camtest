@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FDI Rating</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+
+
+</head>
+<body>
+
+<div id="myModal" class="modal">
+  <div class="modal-card">
+    <div class="modal-content animate__animated animate__backInDown">
+        <header class="modal-card-head">
+          <p class="modal-card-title"><strong style="color: Red;">FDI - Fire Danger Index</strong></p>
+        </header>
+        <article class="tile is-child box" style="background-color: #e5e5e5;">
+          <div class="content p-1" style="background-color: #fff;">
+            <p><img src="https://www.weathersa.co.za/images/data/fpgwarnings/FDI_Map.png"></p>
+            <p>
+              <strong style="color: blue;">Blue</strong> : 0 – 20 : SAFE : Cold and wet<br>
+              <strong style="color: Green;">Green</strong> : 21 – 45 : MODERATE : Low fire risk. Care to be taken for burning operations<br>
+              <strong style="color: Yellow;">Yellow</strong> : 46 – 60 : DANGEROUS : Caution advised<br>
+              <strong style="color: Orange;">Orange</strong> : 61 – 75 : VERY DANGEROUS : Teams kept on standby. No open flames.<br>
+              <strong style="color: Red;">Red</strong> : 81 – 100 : EXTREME. Warnings presented on radio and TV forecasts.
+              <center><p><button class="button is-danger" onclick="closeWindow()">Close Window</button></p></center>
+            </p>
+          </div>
+        </article>
+    </div>
+  </div>
+</div>
+<script>
+  function openModal() {
+    var modal = document.getElementById("myModal");
+    modal.style.display = "block";
+  }
+
+  function closeModal() {
+    var modal = document.getElementById("myModal");
+    modal.style.display = "none";
+  }
+
+  function closeWindow() {
+    window.close();
+  }
+
+  window.addEventListener("load", function() {
+    openModal();
+  });
+</script>
+
+
+</body>
+</html>
