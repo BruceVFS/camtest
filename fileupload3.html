@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File Upload Page</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+  <style>
+    body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    .section { padding: 40px; }
+    .container { max-width: 600px; margin: 0 auto; }
+    .view-document-btn { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">File Upload Page</h1>
+      <div class="file has-name is-fullwidth">
+        <label class="file-label">
+          <input class="file-input" type="file" name="fileUpload" id="fileUpload" accept=".doc,.docx,.pdf,.jpg,.jpeg,.png">
+          <span class="file-cta">
+            <span class="file-icon">
+              <i class="fas fa-upload"></i>
+            </span>
+            <span class="file-label">
+              Choose a file...
+            </span>
+          </span>
+          <span class="file-name" id="fileName">
+            No file selected
+          </span>
+        </label>
+      </div>
+      <progress class="progress is-primary" value="0" max="100" id="uploadProgress"></progress>
+      <button class="button is-primary" id="uploadBtn" disabled>Upload</button>
+      <div id="viewDocumentContainer" style="display: none;">
+        <a class="button is-primary view-document-btn" id="viewDocumentBtn" target="_blank" rel="noopener noreferrer">View Document</a>
+      </div>
+
+    </div>
+  </section>
+  <script defer src="https://use.fontawesome.com/releases/v5.15.3/js/all.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const fileInput = document.getElementById('fileUpload');
+      const fileNameDisplay = document.getElementById('fileName');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const viewDocumentContainer = document.getElementById('viewDocumentContainer');
+      const viewDocumentBtn = document.getElementById('viewDocumentBtn');
+
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
+          if (allowedTypes.includes(file.type)) {
+            fileNameDisplay.textContent = file.name;
+            uploadBtn.disabled = false;
+          } else {
+            alert('Invalid file type. Only document and image files are allowed.');
+            fileInput.value = '';
+            fileNameDisplay.textContent = 'No file selected';
+            uploadBtn.disabled = true;
+          }
+        } else {
+          fileNameDisplay.textContent = 'No file selected';
+          uploadBtn.disabled = true;
+        }
+      });
+
+      uploadBtn.addEventListener('click', () => {
+        const file = fileInput.files[0];
+        if (file) {
+          uploadBtn.disabled = true;
+          uploadProgress.value = 0;
+
+          simulateFileUpload(file, () => {
+            uploadProgress.value = 100;
+            viewDocumentContainer.style.display = 'block';
+            viewDocumentBtn.href = 'your_uploaded_file_url'; // Replace with the actual URL of the uploaded file
+            fileInput.value = '';
+            fileNameDisplay.textContent = 'No file selected';
+            uploadBtn.disabled = false;
+          });
+        }
+      });
+
+      function simulateFileUpload(file, onComplete) {
+        const totalSize = file.size;
+        const chunkSize = 100000; // Simulated chunk size in bytes (adjust as needed)
+        let uploadedSize = 0;
+
+        const uploadChunk = () => {
+          const remainingSize = totalSize - uploadedSize;
+          const currentChunkSize = Math.min(remainingSize, chunkSize);
+          uploadedSize += currentChunkSize;
+          const progress = (uploadedSize / totalSize) * 100;
+          uploadProgress.value = progress;
+
+          if (uploadedSize < totalSize) {
+            setTimeout(uploadChunk, 500); // Simulate chunk upload delay (adjust as needed)
+          } else {
+            onComplete();
+          }
+        };
+
+        setTimeout(uploadChunk, 500); // Simulate initial delay before starting the upload
+      }
+    });
+  </script>
+</body>
+</html>
