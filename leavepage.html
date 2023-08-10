@@ -3,16 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Confirm Reading Page</title>
-  <!-- Include Bulma CSS -->
+  <title>Confirm Leave Page</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
 </head>
 <body>
   <section class="section">
     <div class="container">
-      <p class="content">
+      <div id="message" class="content">
+        <!-- Icon will be inserted here -->
         This is the content of the page that you want the user to read.
-      </p>
+      </div>
+ 			<i id="icon" class="fa-solid fa-person-through-window" style="display: none; font-size: 3em; color: darkblue;"></i> <!-- Update icon class, size, and color -->
   
       <button id="confirmButton" class="button is-primary">I have read the content</button>
     </div>
@@ -23,6 +25,12 @@
     document.getElementById("confirmButton").addEventListener("click", function() {
       // Hide the button once clicked
       this.style.display = "none";
+      
+      // Show the icon
+      document.getElementById("icon").style.display = "inline";
+
+      // Change the message
+      document.getElementById("message").textContent = "Thank you, you can now continue to do what you came here to do ...";
 
       // Attach the event listener to the window object
       window.addEventListener("beforeunload", function (event) {
