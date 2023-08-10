@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Reading Page</title>
+  <!-- Include Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <p class="content">
+        This is the content of the page that you want the user to read.
+      </p>
+  
+      <button id="confirmButton" class="button is-primary">I have read the content</button>
+    </div>
+  </section>
+  
+  <script>
+    // Attach the event listener to the button
+    document.getElementById("confirmButton").addEventListener("click", function() {
+      // Hide the button once clicked
+      this.style.display = "none";
+
+      // Attach the event listener to the window object
+      window.addEventListener("beforeunload", function (event) {
+        // Display a custom confirmation message
+        var confirmationMessage = "Have you read the content of this page?";
+        event.returnValue = confirmationMessage;
+        return confirmationMessage;
+      });
+    });
+  </script>
+</body>
+</html>
