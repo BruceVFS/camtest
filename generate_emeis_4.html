@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <title>IMEI Generator</title>
+  <style>
+    .imei-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .imei-container {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    .imei {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .imei-text {
+      flex: 1;
+      margin-right: 10px;
+    }
+    .imei-num {
+      flex: 0;
+      margin-right: 5px;
+    }
+    .imei button {
+      margin-left: 10px;
+    }
+    .strikethrough {
+      text-decoration: line-through;
+    }
+    .buttons-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    @media screen and (max-width: 768px) {
+      .buttons-container {
+        grid-template-columns: 1fr;
+      }
+      .imei-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">IMEI Generator</h1>
+      <div class="field">
+        <div class="control">
+          <label class="label">Number of IMEIs:</label>
+          <input id="numIMEIs" class="slider is-fullwidth" type="range" min="1" max="20" value="4">
+          <span id="numIMEIsValue">4</span>
+        </div>
+      </div>
+      <div class="buttons-container">
+        <button id="generateButton" class="button is-primary">Generate IMEIs</button>
+        <button id="clearButton" class="button is-danger">Clear IMEIs</button>
+      </div>
+      <div class="imei-row" id="imeiRow">
+        <!-- IMEIs will be generated here -->
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const numIMEIsInput = document.getElementById('numIMEIs');
+    const numIMEIsValue = document.getElementById('numIMEIsValue');
+    const generateButton = document.getElementById('generateButton');
+    const clearButton = document.getElementById('clearButton');
+    const imeiRow = document.getElementById('imeiRow');
+
+    numIMEIsInput.addEventListener('input', updateNumIMEIsValue);
+    generateButton.addEventListener('click', generateIMEIs);
+    clearButton.addEventListener('click', clearIMEIs);
+
+    function updateNumIMEIsValue() {
+      const value = numIMEIsInput.value;
+      numIMEIsValue.textContent = value;
+    }
+
+    function generateIMEIs() {
+      clearIMEIs();
+      const numIMEIs = numIMEIsInput.value;
+
+      for (let i = 0; i < numIMEIs; i++) {
+        const imei = generateIMEI();
+        const imeiElement = document.createElement('div');
+        imeiElement.classList.add('imei-container');
+        imeiElement.innerHTML = `
+          <div class="imei">
+            <span class="imei-num">${i + 1}. </span>
+            <span class="imei-text">${imei}</span>
+            <button class="button is-small is-primary" onclick="copyIMEI(this)">Copy</button>
+          </div>
+        `;
+        imeiRow.appendChild(imeiElement);
+      }
+    }
+
+    function generateIMEI() {
+      var tac = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      var serial = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+      var checkDigit = calculateCheckDigit(tac + serial);
+      return tac + '-' + serial + '-' + checkDigit;
+    }
+
+    function calculateCheckDigit(input) {
+      var sum = 0;
+      var double = false;
+      for (var i = input.length - 1; i >= 0; i--) {
+        var digit = parseInt(input.charAt(i));
+        if (double) {
+          digit *= 2;
+          if (digit > 9) {
+            digit -= 9;
+          }
+        }
+        sum += digit;
+        double = !double;
+      }
+      return (10 - (sum % 10)) % 10;
+    }
+
+    function copyIMEI(button) {
+      const imeiElement = button.previousElementSibling;
+      const imei = imeiElement.textContent;
+      navigator.clipboard.writeText(imei)
+        .then(() => {
+          imeiElement.classList.add('strikethrough');
+          button.textContent = 'Copied';
+        })
+        .catch(err => console.error('Error copying IMEI:', err));
+    }
+
+    function clearIMEIs() {
+      imeiRow.innerHTML = '';
+    }
+  </script>
+</body>
+</html>
