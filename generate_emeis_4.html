@@ -61,10 +61,11 @@
           <span id="numIMEIsValue">4</span>
         </div>
       </div>
-      <div class="buttons-container">
-        <button id="generateButton" class="button is-primary">Generate IMEIs</button>
-        <button id="clearButton" class="button is-danger">Clear IMEIs</button>
-      </div>
+			<div class="buttons-container">
+			  <button id="generateButton" class="button is-primary">Generate IMEIs</button>
+			  <button id="clearButton" class="button is-danger">Clear IMEIs</button>
+			  <button id="copyAllButton" class="button is-info">Copy All</button> <!-- New button -->
+			</div>
       <div class="imei-row" id="imeiRow">
         <!-- IMEIs will be generated here -->
       </div>
@@ -77,10 +78,12 @@
     const generateButton = document.getElementById('generateButton');
     const clearButton = document.getElementById('clearButton');
     const imeiRow = document.getElementById('imeiRow');
+    const copyAllButton = document.getElementById('copyAllButton');
 
     numIMEIsInput.addEventListener('input', updateNumIMEIsValue);
     generateButton.addEventListener('click', generateIMEIs);
     clearButton.addEventListener('click', clearIMEIs);
+    copyAllButton.addEventListener('click', copyAllIMEIs);
 
     function updateNumIMEIsValue() {
       const value = numIMEIsInput.value;
@@ -144,6 +147,23 @@
     function clearIMEIs() {
       imeiRow.innerHTML = '';
     }
+    
+		function copyAllIMEIs() {
+		  const imeiElements = document.querySelectorAll('.imei-text'); // Select all imei text elements
+		  const imeis = Array.from(imeiElements).map(element => element.textContent);
+		
+		  const imeisText = imeis.join('\n'); // Join the imeis with newlines
+		
+		  navigator.clipboard.writeText(imeisText)
+		    .then(() => {
+		      imeis.forEach((imei, index) => {
+		        imeiElements[index].classList.add('strikethrough');
+		        imeiElements[index].nextElementSibling.textContent = 'Copied';
+		      });
+		    })
+		    .catch(err => console.error('Error copying IMEIs:', err));
+		}    
+    
   </script>
 </body>
 </html>

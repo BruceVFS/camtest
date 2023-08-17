@@ -57,14 +57,15 @@
       <div class="field">
         <label class="label">Number of GUIDs:</label>
         <div class="control">
-          <input id="numGUIDs" class="slider is-fullwidth" type="range" min="1" max="21" value="3">         <span id="numGUIDsValue">3</span>
+          <input id="numGUIDs" class="slider is-fullwidth" type="range" min="1" max="21" value="3"> <span id="numGUIDsValue">3</span>
         </div>
-
+        
       </div>
-      <div class="buttons-container">
-        <button id="generateButton" class="button is-primary">Generate GUIDs</button>
-        <button id="clearButton" class="button is-danger">Clear GUIDs</button>
-      </div>
+			<div class="buttons-container">
+			  <button id="generateButton" class="button is-primary">Generate GUIDs</button>
+			  <button id="clearButton" class="button is-danger">Clear GUIDs</button>
+			  <button id="copyAllButton" class="button is-info">Copy All</button> <!-- New button -->
+			</div>
       <div class="guid-row" id="guidRow">
         <!-- GUIDs will be generated here -->
       </div>
@@ -77,10 +78,12 @@
     const generateButton = document.getElementById('generateButton');
     const clearButton = document.getElementById('clearButton');
     const guidRow = document.getElementById('guidRow');
+    const copyAllButton = document.getElementById('copyAllButton');
 
     numGUIDsInput.addEventListener('input', updateNumGUIDsValue);
     generateButton.addEventListener('click', generateGUIDs);
     clearButton.addEventListener('click', clearGUIDs);
+    copyAllButton.addEventListener('click', copyAllGUIDs);
 
     function updateNumGUIDsValue() {
       const value = numGUIDsInput.value;
@@ -128,6 +131,24 @@
     function clearGUIDs() {
       guidRow.innerHTML = '';
     }
+    
+		function copyAllGUIDs() {
+		  const guidElements = document.querySelectorAll('.guid-text'); // Select all guid text elements
+		  const guids = Array.from(guidElements).map(element => element.textContent);
+		
+		  const guidsText = guids.join('\n'); // Join the guids with newlines
+		
+		  navigator.clipboard.writeText(guidsText)
+		    .then(() => {
+		      guids.forEach((guid, index) => {
+		        guidElements[index].classList.add('strikethrough');
+		        guidElements[index].nextElementSibling.textContent = 'Copied';
+		      });
+		    })
+		    .catch(err => console.error('Error copying GUIDs:', err));
+		}    
+    
+    
   </script>
 
 </body>
