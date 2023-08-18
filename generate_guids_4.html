@@ -52,6 +52,16 @@
   </style>
 </head>
 <body>
+
+<div id="content"></div>
+<script>
+  fetch('sticky_tools_link.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('content').innerHTML = data;
+    });
+</script>  
+  
   <section class="section">
     <div class="container">
       <h1 class="title">GUID Generator</h1>
