@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.7/dist/xlsx.full.min.js"></script>
   <title>GUID Generator</title>
   <style>
     .guid-row {
@@ -59,13 +60,13 @@
         <div class="control">
           <input id="numGUIDs" class="slider is-fullwidth" type="range" min="1" max="21" value="3"> <span id="numGUIDsValue">3</span>
         </div>
-        
       </div>
-			<div class="buttons-container">
-			  <button id="generateButton" class="button is-primary">Generate GUIDs</button>
-			  <button id="clearButton" class="button is-danger">Clear GUIDs</button>
-			  <button id="copyAllButton" class="button is-info">Copy All</button> <!-- New button -->
-			</div>
+      <div class="buttons-container">
+        <button id="generateButton" class="button is-primary">Generate GUIDs</button>
+        <button id="clearButton" class="button is-danger">Clear GUIDs</button>
+        <button id="copyAllButton" class="button is-info">Copy All</button>
+        <button id="exportExcelButton" class="button is-success">Export to Excel</button>
+      </div>
       <div class="guid-row" id="guidRow">
         <!-- GUIDs will be generated here -->
       </div>
@@ -79,19 +80,32 @@
     const clearButton = document.getElementById('clearButton');
     const guidRow = document.getElementById('guidRow');
     const copyAllButton = document.getElementById('copyAllButton');
+    const exportExcelButton = document.getElementById('exportExcelButton');
+
+    let generatedGUIDs = []; // Store generated GUIDs for exporting
 
     numGUIDsInput.addEventListener('input', updateNumGUIDsValue);
     generateButton.addEventListener('click', generateGUIDs);
     clearButton.addEventListener('click', clearGUIDs);
     copyAllButton.addEventListener('click', copyAllGUIDs);
+    exportExcelButton.addEventListener('click', exportGUIDsToExcel);
 
     function updateNumGUIDsValue() {
       const value = numGUIDsInput.value;
       numGUIDsValue.textContent = value;
     }
 
+    function generateGUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+          v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
     function generateGUIDs() {
       clearGUIDs();
+      generatedGUIDs = []; // Reset the generated GUIDs array
       const numGUIDs = numGUIDsInput.value;
 
       for (let i = 0; i < numGUIDs; i++) {
@@ -106,15 +120,8 @@
           </div>
         `;
         guidRow.appendChild(guidElement);
+        generatedGUIDs.push({ GUID: guid }); // Store the generated GUID
       }
-    }
-
-    function generateGUID() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0,
-          v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
     }
 
     function copyGUID(button) {
@@ -131,25 +138,50 @@
     function clearGUIDs() {
       guidRow.innerHTML = '';
     }
-    
-		function copyAllGUIDs() {
-		  const guidElements = document.querySelectorAll('.guid-text'); // Select all guid text elements
-		  const guids = Array.from(guidElements).map(element => element.textContent);
-		
-		  const guidsText = guids.join('\n'); // Join the guids with newlines
-		
-		  navigator.clipboard.writeText(guidsText)
-		    .then(() => {
-		      guids.forEach((guid, index) => {
-		        guidElements[index].classList.add('strikethrough');
-		        guidElements[index].nextElementSibling.textContent = 'Copied';
-		      });
-		    })
-		    .catch(err => console.error('Error copying GUIDs:', err));
-		}    
-    
+
+    function copyAllGUIDs() {
+      const guidElements = document.querySelectorAll('.guid-text');
+      const guids = Array.from(guidElements).map(element => element.textContent);
+      const guidsText = guids.join('\n');
+      navigator.clipboard.writeText(guidsText)
+        .then(() => {
+          guids.forEach((guid, index) => {
+            guidElements[index].classList.add('strikethrough');
+            guidElements[index].nextElementSibling.textContent = 'Copied';
+          });
+        })
+        .catch(err => console.error('Error copying GUIDs:', err));
+    }
+
+    function exportGUIDsToExcel() {
+      if (generatedGUIDs.length === 0) {
+        console.log("No GUIDs to export.");
+        return;
+      }
+
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(generatedGUIDs);
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "GUIDs");
+
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+
+      const currentDate = new Date();
+      const timestamp = currentDate.toISOString().slice(11, 19).replace(/:/g, "");
+      const fileName = `GUIDs.${timestamp}.xlsx`;
+
+      const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+      } else {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+      }
+    }
     
   </script>
-
 </body>
 </html>
