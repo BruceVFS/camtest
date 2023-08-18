@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.7/dist/xlsx.full.min.js"></script>
   <title>IMEI Generator</title>
   <style>
     .imei-row {
@@ -65,13 +66,13 @@
 			  <button id="generateButton" class="button is-primary">Generate IMEIs</button>
 			  <button id="clearButton" class="button is-danger">Clear IMEIs</button>
 			  <button id="copyAllButton" class="button is-info">Copy All</button> <!-- New button -->
+        <button id="exportExcelButton" class="button is-success">Export to Excel</button> <!-- New button -->
 			</div>
       <div class="imei-row" id="imeiRow">
         <!-- IMEIs will be generated here -->
       </div>
     </div>
   </section>
-
   <script>
     const numIMEIsInput = document.getElementById('numIMEIs');
     const numIMEIsValue = document.getElementById('numIMEIsValue');
@@ -79,6 +80,10 @@
     const clearButton = document.getElementById('clearButton');
     const imeiRow = document.getElementById('imeiRow');
     const copyAllButton = document.getElementById('copyAllButton');
+    const exportExcelButton = document.getElementById('exportExcelButton');
+
+    let generatedIMEIs = [];
+    exportExcelButton.addEventListener('click', exportIMEIsToExcel);
 
     numIMEIsInput.addEventListener('input', updateNumIMEIsValue);
     generateButton.addEventListener('click', generateIMEIs);
@@ -88,25 +93,6 @@
     function updateNumIMEIsValue() {
       const value = numIMEIsInput.value;
       numIMEIsValue.textContent = value;
-    }
-
-    function generateIMEIs() {
-      clearIMEIs();
-      const numIMEIs = numIMEIsInput.value;
-
-      for (let i = 0; i < numIMEIs; i++) {
-        const imei = generateIMEI();
-        const imeiElement = document.createElement('div');
-        imeiElement.classList.add('imei-container');
-        imeiElement.innerHTML = `
-          <div class="imei">
-            <span class="imei-num">${i + 1}. </span>
-            <span class="imei-text">${imei}</span>
-            <button class="button is-small is-primary" onclick="copyIMEI(this)">Copy</button>
-          </div>
-        `;
-        imeiRow.appendChild(imeiElement);
-      }
     }
 
     function generateIMEI() {
@@ -133,6 +119,27 @@
       return (10 - (sum % 10)) % 10;
     }
 
+    function generateIMEIs() {
+      clearIMEIs();
+      generatedIMEIs = []; // Reset the generated IMEIs array
+      const numIMEIs = numIMEIsInput.value;
+
+      for (let i = 0; i < numIMEIs; i++) {
+        const imei = generateIMEI();
+        const imeiElement = document.createElement('div');
+        imeiElement.classList.add('imei-container');
+        imeiElement.innerHTML = `
+          <div class="imei">
+            <span class="imei-num">${i + 1}. </span>
+            <span class="imei-text">${imei}</span>
+            <button class="button is-small is-primary" onclick="copyIMEI(this)">Copy</button>
+          </div>
+        `;
+        imeiRow.appendChild(imeiElement);
+        generatedIMEIs.push({ IMEI: imei }); // Store the generated IMEI
+      }
+    }
+
     function copyIMEI(button) {
       const imeiElement = button.previousElementSibling;
       const imei = imeiElement.textContent;
@@ -146,24 +153,53 @@
 
     function clearIMEIs() {
       imeiRow.innerHTML = '';
+      generatedIMEIs = []; // Clear the stored generated IMEIs
     }
-    
-		function copyAllIMEIs() {
-		  const imeiElements = document.querySelectorAll('.imei-text'); // Select all imei text elements
-		  const imeis = Array.from(imeiElements).map(element => element.textContent);
-		
-		  const imeisText = imeis.join('\n'); // Join the imeis with newlines
-		
-		  navigator.clipboard.writeText(imeisText)
-		    .then(() => {
-		      imeis.forEach((imei, index) => {
-		        imeiElements[index].classList.add('strikethrough');
-		        imeiElements[index].nextElementSibling.textContent = 'Copied';
-		      });
-		    })
-		    .catch(err => console.error('Error copying IMEIs:', err));
-		}    
-    
+
+    function copyAllIMEIs() {
+      const imeiElements = document.querySelectorAll('.imei-text');
+      const imeis = Array.from(imeiElements).map(element => element.textContent);
+      const imeisText = imeis.join('\n');
+      navigator.clipboard.writeText(imeisText)
+        .then(() => {
+          imeis.forEach((imei, index) => {
+            imeiElements[index].classList.add('strikethrough');
+            imeiElements[index].nextElementSibling.textContent = 'Copied';
+          });
+        })
+        .catch(err => console.error('Error copying IMEIs:', err));
+    }
+
+    // New export function to export generated IMEIs to Excel
+    function exportIMEIsToExcel() {
+      if (generatedIMEIs.length === 0) {
+        console.log("No IMEIs to export.");
+        return;
+      }
+
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(generatedIMEIs);
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, "IMEIs");
+
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+
+      const currentDate = new Date();
+      const timestamp = currentDate.toISOString().slice(11, 19).replace(/:/g, "");
+      const fileName = `IMEIs.${timestamp}.xlsx`;
+
+      const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+      } else {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+      }
+    }
+
   </script>
 </body>
 </html>
