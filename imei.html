@@ -7,6 +7,16 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.1/css/bulma.min.css">
 </head>
 <body>
+
+<div id="content"></div>
+<script>
+  fetch('sticky_tools_link.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('content').innerHTML = data;
+    });
+</script>
+  
   <section class="section">
     <h1 class="title">Get IMEI</h1>
     <button class="button is-primary" onclick="getIMEI()">Get IMEI</button>
