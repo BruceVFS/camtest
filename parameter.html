@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parameter Example</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+</head>
+<body>
+<div id="content"></div>
+<script>
+  fetch('sticky_tools_link.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('content').innerHTML = data;
+    });
+</script>
+<section class="section">
+  <div class="container">
+    <h1 class="title">Parameter Example</h1>
+    <p class="subtitle">Click the button to view the passed data.</p>
+
+    <!-- Display Information button -->
+    <button class="button is-primary" id="displayButton">Display Information</button>
+    <button class="button is-primary" id="doAnotherButton" disabled>Do Another</button>
+
+    <!-- Modal structure -->
+    <div class="modal" id="modal">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box">
+          <div id="modalContent">
+            <p><strong>Agent ID:</strong> <span id="agentID">Loading...</span></p>
+            <p><strong>Client ID Number:</strong> <span id="clientIDNumber">Loading...</span></p>
+            <p><strong>Share Date & Time:</strong> <span id="customDateTime">Loading...</span></p>
+          </div>
+          <div class="buttons">
+            <button class="button is-success" id="acceptButton">Accept</button>
+            <button class="button is-danger" id="declineButton">Decline</button>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Get the modal and buttons
+  const modal = document.getElementById('modal');
+  const openModalButton = document.getElementById('displayButton');
+  const doAnotherButton = document.getElementById('doAnotherButton');
+  const acceptButton = document.getElementById('acceptButton');
+  const declineButton = document.getElementById('declineButton');
+  const agentIDElement = document.getElementById('agentID');
+  const clientIDNumberElement = document.getElementById('clientIDNumber');
+  const customDateTimeElement = document.getElementById('customDateTime');
+
+  // Get the values from the URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const encodedParams = urlParams.get('params');
+
+  // Function to decode Base64 and split parameters
+  function decodeBase64Params(encodedParams) {
+    const decodedParams = atob(encodedParams);
+    const params = {};
+    decodedParams.split('&').forEach(pair => {
+      const [key, value] = pair.split('=');
+      params[key] = value;
+    });
+    return params;
+  }
+
+  // Decode and display the parameters
+  const decodedParams = decodeBase64Params(encodedParams);
+  const agentID = decodedParams.AgentID || 'N/A';
+  const clientIDNumber = decodedParams.ClientIDNumber || 'N/A';
+  const customDateTime = decodedParams.DateTime || 'N/A';
+
+  agentIDElement.textContent = agentID;
+  clientIDNumberElement.textContent = clientIDNumber;
+  customDateTimeElement.textContent = customDateTime;
+
+  // Event listeners for buttons
+  openModalButton.addEventListener('click', () => {
+    modal.classList.add('is-active');
+    doAnotherButton.removeAttribute('disabled');
+  });
+
+  acceptButton.addEventListener('click', () => {
+    // Perform action for accept button
+    modal.classList.remove('is-active');
+  });
+
+  declineButton.addEventListener('click', () => {
+    // Perform action for decline button
+    modal.classList.remove('is-active');
+  });
+
+  doAnotherButton.addEventListener('click', () => {
+    window.location.href = 'create_parameters.html';
+  });
+</script>
+
+</body>
+</html>

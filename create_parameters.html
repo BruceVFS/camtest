@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parameter Capture and Encoding</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+<div id="content"></div>
+<script>
+  fetch('sticky_tools_link.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('content').innerHTML = data;
+    });
+</script>
+<section class="section">
+  <div class="container">
+    <h1 class="title">Parameter Capture and Encoding</h1>
+    <p class="subtitle">Enter the parameters and review content.</p>
+
+    <form id="parameterForm">
+      <div class="field">
+        <label class="label">Agent ID</label>
+        <div class="control">
+          <input class="input" type="text" id="agentIDInput" placeholder="Enter Agent ID">
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Client ID Number</label>
+        <div class="control">
+          <input class="input" type="text" id="clientIDInput" placeholder="Enter Client ID Number">
+        </div>
+        <p class="help is-danger" id="clientIDError" style="display: none;">Client ID must be 13 numeric characters</p>
+      </div>
+      <div class="field">
+        <label class="label">Date & Time</label>
+        <div class="control">
+          <input class="input" type="text" id="dateTimeInput" data-input>
+        </div>
+      </div>
+			<div class="field is-grouped">
+			  <div class="control">
+			    <button class="button is-primary" id="previewButton" disabled>Review Content</button>
+			  </div>
+			  <div class="control">
+			    <button class="button is-light" id="resetButton">Reset</button>
+			  </div>
+			</div>
+
+    </form>
+
+    <!-- Modal structure -->
+    <div class="modal" id="modal">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box">
+          <p id="modalContent">Modal content will be displayed here.</p>
+          <p><strong> </strong> <span id="encodedURL"></span></p>
+          <div class="buttons">
+            <button class="button is-danger" id="cancelButton">Cancel</button>
+            <button class="button is-success" id="submitButton">Submit</button>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Get form elements and modal
+  const form = document.getElementById('parameterForm');
+  const agentIDInput = document.getElementById('agentIDInput');
+  const clientIDInput = document.getElementById('clientIDInput');
+  const dateTimeInput = document.getElementById('dateTimeInput');
+  const previewButton = document.getElementById('previewButton');
+  const resetButton = document.getElementById('resetButton');
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modalContent');
+  const encodedURLElement = document.getElementById('encodedURL');
+  const cancelButton = document.getElementById('cancelButton');
+  const submitButton = document.getElementById('submitButton');
+  const clientIDError = document.getElementById('clientIDError');
+
+  // Initialize Flatpickr date and time picker
+  flatpickr("#dateTimeInput", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i:S",
+  });
+
+  // Event listener for form submission
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    showPreviewModal();
+  });
+
+  // Event listener for preview button
+  previewButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    showPreviewModal();
+  });
+
+  // Event listener for reset button
+  resetButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    agentIDInput.value = '';
+    clientIDInput.value = '';
+    dateTimeInput.value = '';
+    clientIDError.style.display = 'none';
+    updateButtonStatus();
+  });
+  
+  // Event listener for cancel button
+  cancelButton.addEventListener('click', () => {
+    modal.classList.remove('is-active');
+  });
+
+  // Event listener for submit button
+  submitButton.addEventListener('click', () => {
+    modal.classList.remove('is-active');
+
+    // Get form input values
+    const agentID = agentIDInput.value;
+    const clientIDNumber = clientIDInput.value;
+    const dateTime = dateTimeInput.value;
+
+    // Combine parameters and encode using Base64
+    const combinedParams = `AgentID=${agentID}&ClientIDNumber=${clientIDNumber}&DateTime=${dateTime}`;
+    const encodedParams = btoa(combinedParams);
+
+    // Construct the encoded URL
+    const encodedURL = `parameter.html?params=${encodedParams}`;
+
+    // Set the encoded URL in the modal
+    encodedURLElement.textContent = encodedURL;
+
+    // Redirect to the encoded URL
+     window.location.href = encodedURL;  // Commented out to prevent actual redirection for demonstration
+  });
+
+  // Function to show the preview modal
+  function showPreviewModal() {
+    const agentID = agentIDInput.value;
+    const clientIDNumber = clientIDInput.value;
+    const dateTime = dateTimeInput.value;
+
+    // Construct the preview content
+    const previewContent = `
+      <p><strong>Agent ID:</strong> ${agentID}</p>
+      <p><strong>Client ID Number:</strong> ${clientIDNumber}</p>
+      <p><strong>Date & Time:</strong> ${dateTime}</p>
+    `;
+
+    // Set the content and show the modal
+    modalContent.innerHTML = previewContent;
+    modal.classList.add('is-active');
+  }
+
+  // Event listener for input changes
+  agentIDInput.addEventListener('input', updateButtonStatus);
+  clientIDInput.addEventListener('input', validateClientID);
+  dateTimeInput.addEventListener('input', updateButtonStatus);
+
+  // Function to update the button status
+  function updateButtonStatus() {
+    const agentID = agentIDInput.value;
+    const clientID = clientIDInput.value;
+    const dateTime = dateTimeInput.value;
+    previewButton.disabled = !(agentID && clientID && validateClientID(clientID) && dateTime);
+  }
+
+  // Function to validate Client ID
+  function validateClientID(clientID) {
+    const numericRegex = /^\d+$/;
+    const isValid = numericRegex.test(clientID) && clientID.length === 13;
+    clientIDError.style.display = isValid ? 'none' : 'block';
+    return isValid;
+  }
+</script>
+
+</body>
+</html>
