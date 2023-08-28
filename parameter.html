@@ -34,6 +34,7 @@
             <p><strong>Agent ID:</strong> <span id="agentID">Loading...</span></p>
             <p><strong>Client ID Number:</strong> <span id="clientIDNumber">Loading...</span></p>
             <p><strong>Share Date & Time:</strong> <span id="customDateTime">Loading...</span></p>
+            <p><strong>Link Used:</strong> <span id="url">Loading...</span></p>
           </div>
           <div class="buttons">
             <button class="button is-success" id="acceptButton">Accept</button>
@@ -101,6 +102,17 @@
   doAnotherButton.addEventListener('click', () => {
     window.location.href = 'create_parameters.html';
   });
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the URL of the current page
+      var currentURL = window.location.href;
+  
+      // Display the URL on the page
+      var urlElement = document.getElementById('url');
+      urlElement.textContent = 'Current URL: ' + currentURL;
+    });
+  
+  
 </script>
 
 </body>
