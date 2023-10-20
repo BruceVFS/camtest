@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.7/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.16.7/dist/xlsx.full.min.js"></script>
   <title>IMEI Generator</title>
   <style>
     .imei-row {
@@ -70,12 +70,12 @@
           <span id="numIMEIsValue">4</span>
         </div>
       </div>
-			<div class="buttons-container">
-			  <button id="generateButton" class="button is-primary">Generate IMEIs</button>
-			  <button id="clearButton" class="button is-danger">Clear IMEIs</button>
-			  <button id="copyAllButton" class="button is-info">Copy All</button> <!-- New button -->
+      <div class="buttons-container">
+        <button id="generateButton" class="button is-primary">Generate IMEIs</button>
+        <button id="clearButton" class="button is-danger">Clear IMEIs</button>
+        <button id="copyAllButton" class="button is-info">Copy All</button> <!-- New button -->
         <button id="exportExcelButton" class="button is-success">Export to Excel</button> <!-- New button -->
-			</div>
+      </div>
       <div class="imei-row" id="imeiRow">
         <!-- IMEIs will be generated here -->
       </div>
@@ -103,18 +103,40 @@
       numIMEIsValue.textContent = value;
     }
 
-    function generateIMEI() {
-      var tac = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-      var serial = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-      var checkDigit = calculateCheckDigit(tac + serial);
-      return tac + '-' + serial + '-' + checkDigit;
-    }
+function generateIMEI() {
+  // Generate a 6-digit TAC
+  const tac = generateRandom6DigitNumber();
+
+  // Calculate the TAC check digit
+  const tacCheckDigit = calculateCheckDigit(tac);
+
+  // Generate a 6-digit SN
+  const serial = generateRandom6DigitNumber();
+
+  // Calculate the SN check digit
+  const serialCheckDigit = calculateCheckDigit(serial);
+
+  // Create the IMEI with TAC, TAC check digit, SN, and SN check digit
+  const imei = `${tac}${tacCheckDigit}${serial}${serialCheckDigit}`;
+
+  // Calculate the final check digit for the entire IMEI
+  const imeiCheckDigit = calculateCheckDigit(imei);
+
+  // Return the 15-digit IMEI with the final check digit
+  return `${imei}${imeiCheckDigit}`;
+}
+
+// Function to generate a random 6-digit number
+function generateRandom6DigitNumber() {
+  return Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+}
+
 
     function calculateCheckDigit(input) {
-      var sum = 0;
-      var double = false;
-      for (var i = input.length - 1; i >= 0; i--) {
-        var digit = parseInt(input.charAt(i));
+      let sum = 0;
+      let double = false;
+      for (let i = input.length - 1; i >= 0; i--) {
+        let digit = parseInt(input.charAt(i));
         if (double) {
           digit *= 2;
           if (digit > 9) {
@@ -170,15 +192,14 @@
       const imeisText = imeis.join('\n');
       navigator.clipboard.writeText(imeisText)
         .then(() => {
-          imeis.forEach((imei, index) => {
-            imeiElements[index].classList.add('strikethrough');
-            imeiElements[index].nextElementSibling.textContent = 'Copied';
+          imeiElements.forEach((element, index) => {
+            element.classList.add('strikethrough');
+            element.nextElementSibling.textContent = 'Copied';
           });
         })
         .catch(err => console.error('Error copying IMEIs:', err));
     }
 
-    // New export function to export generated IMEIs to Excel
     function exportIMEIsToExcel() {
       if (generatedIMEIs.length === 0) {
         console.log("No IMEIs to export.");
@@ -207,7 +228,6 @@
         link.click();
       }
     }
-
   </script>
 </body>
 </html>
