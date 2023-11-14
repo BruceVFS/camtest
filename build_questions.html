@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+  <style>
+    body {
+      background-color: #f2f2f2;
+    }
+
+    #animated-container {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #top-card {
+      background-color: #e3fbde;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    #bottom-card {
+      background-color: #cce7f6;
+      padding: 20px;
+      overflow: auto;
+      max-height: 500px;
+    }
+
+    #animated-text {
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    #generateButton {
+      width: 100%;
+      white-space: normal;
+      max-height: 500px;
+    }
+
+    /* Custom class to override Bulma styles for button text wrapping */
+    .wrap-button-text {
+      white-space: normal !important;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="section">
+    <div class="container" id="animated-container">
+      <div id="top-card" class="card">
+        <div class="card-content">
+          <button id="animateButton" class="button is-primary wrap-button-text" id="generateButton">
+            GENERATE A MODERN DAY, RELATABLE SECURITY QUESTION
+          </button>
+        </div>
+      </div>
+
+      <div id="bottom-card" class="card">
+        <div class="card-content">
+          <div id="animated-text">
+            <!-- Words will be added here dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const sentences = [
+				"At what age did you realize your superhero alter ego wasn't getting its own comic book?",
+				"At what age did you stop counting the number of unread emails in your inbox?",
+				"At what age did your imaginary friend stop talking to you?",
+				"In what city did you experience your first and last attempt at extreme couponing?",
+				"In what city did you first discover that parallel parking is a real-life challenge?",
+				"In what town did you first realize that adulthood wasn't all it's cracked up to be?",
+				"In what year did you give up on becoming an astronaut?",
+				"In what year did you give up on your dream of becoming a world-class mime?",
+				"In what year did you realize that 'adulting' is just a series of disappointments?",
+				"In what year did you realize that finding matching socks was an elusive life skill?",
+				"On what social media platform did you last overshare your mundane life updates?",
+				"What was the name of the app you downloaded and immediately regretted?",
+				"What was the name of the elective class you regret taking in high school?",
+				"What was the name of the online personality quiz that accurately predicted your snack preferences?",
+				"What was the name of the plant you accidentally killed despite its reputation for being unkillable?",
+				"What was the name of your most cringe-worthy online username from your teenage years?",
+				"What was the name of your most forgettable summer fling?",
+				"What was the nickname of your childhood imaginary friend's imaginary friend?",
+				"What was the nickname of your most regrettable haircut?",
+				"What's the address of the street where you lost your car keys and your dignity?",
+				"What's the address of the street where your childhood dreams moved out?",
+				"What's the alias you use for online deliveries to avoid judgment from your neighbors?",
+				"What's the alias you use to avoid awkward encounters with former colleagues?",
+				"What's the alias you use when making reservations to sound more mysterious?",
+				"What's the current password to your abandoned Pinterest account?",
+				"What's the maiden name of your favorite fictional character's mother?",
+				"What's the maiden name of your least favorite fictional character's grandmother?",
+				"What's the middle name of your second-best friend from kindergarten?",
+				"What's the name of the forgotten celebrity you claimed to have met just to impress someone?",
+				"What's the name of the hobby you picked up for a week and then abandoned because it was too hard?",
+				"What's the name of the obscure sport you pretended to be an expert in during a blind date?",
+				"What's the name of the pet rock you lost in a tragic gardening accident?",
+				"What's the name of the restaurant where you had your most forgettable meal ever?",
+				"What's the name of the street where you once got lost following a GPS?",
+				"What's the name of the TV show you binge-watched instead of pursuing your passions?",
+				"What's the pseudonym you use for your secret, mediocre poetry blog?",
+				"What's the pseudonym you use to write fake positive reviews for your own mediocre novel?",
+				"What's the title of the book you started but never finished because it got too confusing?",
+				"What's the title of the inspirational quote you made up to seem profound on social media?",
+				"What's the title of the movie you claim to have seen but secretly slept through?",
+				"What's the title of the self-help book you bought but never read because it seemed too optimistic?",
+				"When did you last use 'I have plans' as an excuse to binge-watch your favorite TV series?",
+				"When did you last use 'I'm too busy' as an excuse to avoid a family gathering?",
+				"When did you last use 'I'm too old for this' as an excuse to avoid responsibility?",
+				"When did you last use 'I'm too old for this' to justify avoiding new technology?",
+				"When did you last use 'It's not you, it's me' as a breakup excuse?",
+				"When did you stop believing in the magic of microwave dinners?",
+				"Which conspiracy theory do you use to avoid discussing politics?",
+				"Which extinct brand do you miss the most, and why is it your favorite?",
+		    "In what city did you first experience ennui (a feeling of listlessness, dissatisfaction, or boredom resulting from a lack of excitement, interest, or stimulation)?",
+        "At what age did your childhood pet run away?",
+        "In what year did you abandon your dreams?",
+        "On what street did you lose your childlike sense of wonder?",
+        "What is the maiden name of your father's mistress?",
+        "What is the name of your favourite cancelled show?",
+        "What is the name of your least favourite child?",
+        "What is your ex-wife's newest last name?",
+        "What sports team do you fetishize to avoid meaningful discussion with others?",
+        "What was the middle name of your first rebound?",
+        "What was the name of your favourite unpaid internship?",
+        "What's the title of your autobiography, written in disappointment?",
+        "When did you stop trying?"
+      ];
+
+      const animatedText = document.getElementById('animated-text');
+      const animateButton = document.getElementById('animateButton');
+
+      animateButton.addEventListener('click', function () {
+        const shuffledSentences = shuffle(sentences);
+        const randomSentence = shuffledSentences[0];
+        animateText(randomSentence);
+      });
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function animateText(text) {
+        const words = text.split(' ');
+        animatedText.innerHTML = ''; // Clear the existing text
+
+        words.forEach((word, index) => {
+          setTimeout(() => {
+            animatedText.innerHTML += word + ' ';
+          }, index * 100); // Adjust the delay as needed
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>
