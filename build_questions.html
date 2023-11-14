@@ -49,6 +49,13 @@
 </head>
 
 <body>
+<script>
+  fetch('sticky_tools_link.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('content').innerHTML = data;
+    });
+</script>	
   <section class="section">
     <div class="container" id="animated-container">
       <div id="top-card" class="card">
