@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows 11 Update Page</title>
+
+  <style>
+    body {
+      background-color: #000000;
+      color: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 26px;
+      line-height: 1.1;
+      text-align: center;
+      font-weight: 300;
+      margin: 0;
+      overflow: hidden; /* Hide the scrollbar */
+    }
+
+    @keyframes bgg {
+      0% { background: rgba(0, 153, 255, 1); }
+      50% { background: rgba(41, 255, 121, 1); }
+      100% { background: rgba(255, 74, 88, 1); }
+    }
+
+    .loader {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50%);
+      width: 50px;
+      height: 50px;
+      margin: auto;
+    }
+
+    .loader .circle {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      opacity: 0;
+      transform: rotate(225deg);
+      animation-iteration-count: infinite;
+      animation-name: orbit;
+      animation-duration: 5.5s;
+    }
+
+    .loader .circle:after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 5px;
+      background: #fff;
+      box-shadow: 0 0 9px rgba(255, 255, 255, .7);
+    }
+
+    .loader .circle:nth-child(2) {
+      animation-delay: 240ms;
+    }
+
+    .loader .circle:nth-child(3) {
+      animation-delay: 480ms;
+    }
+
+    .loader .circle:nth-child(4) {
+      animation-delay: 720ms;
+    }
+
+    .loader .circle:nth-child(5) {
+      animation-delay: 960ms;
+    }
+
+    @keyframes orbit {
+      0% {
+        transform: rotate(225deg);
+        opacity: 1;
+        animation-timing-function: ease-out;
+      }
+      7% {
+        transform: rotate(345deg);
+        animation-timing-function: linear;
+      }
+      30% {
+        transform: rotate(455deg);
+        animation-timing-function: ease-in-out;
+      }
+      39% {
+        transform: rotate(690deg);
+        animation-timing-function: linear;
+      }
+      70% {
+        transform: rotate(815deg);
+        opacity: 1;
+        animation-timing-function: ease-out;
+      }
+      75% {
+        transform: rotate(945deg);
+        animation-timing-function: ease-out;
+      }
+      76% {
+        transform: rotate(945deg);
+        opacity: 0;
+      }
+      100% {
+        transform: rotate(945deg);
+        opacity: 0;
+      }
+    }
+
+    .is-size-4 {
+      margin-bottom: 1px; /* Adjust spacing between paragraphs */
+      line-height: 0.3;
+    }
+
+    .is-size-5 {
+      position: fixed;
+      bottom: 20px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+  </style>
+
+  <script>
+    window.console = window.console || function(t) {};
+
+    // Function to toggle fullscreen
+    function toggleFullScreen() {
+      const element = document.documentElement;
+
+      if (!document.fullscreenElement) {
+        element.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Call toggleFullScreen on a user action (e.g., a click)
+    document.addEventListener('click', function() {
+      toggleFullScreen();
+    });
+  </script>
+  
+  
+</head>
+
+<body translate="no">
+  <div class='loader'>
+    <div class='circle'></div>
+    <div class='circle'></div>
+    <div class='circle'></div>
+    <div class='circle'></div>
+    <div class='circle'></div>
+  </div>
+
+  <div class="container">
+    <p class="is-size-4">You are <span id="updatePercentage">17</span>% there.</p>
+    <p class="is-size-4">Please keep your computer on.</p>
+  </div>
+
+  <p class="is-size-5">Your computer may restart a few times</p>
+
+  <script>
+    function updatePercentage() {
+      const updatePercentageElement = document.getElementById('updatePercentage');
+      let currentPercentage = parseInt(updatePercentageElement.innerText, 10);
+      currentPercentage += 1;
+      updatePercentageElement.innerText = currentPercentage;
+    }
+
+    setInterval(updatePercentage, 4000);
+  </script>
+</body>
+</html>
