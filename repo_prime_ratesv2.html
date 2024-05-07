@@ -14,14 +14,14 @@
             background-color: #f6f6f6;
         }
         .pastel-green td {
-            background-color: #e8f4da ; /* Pastel green */
+            background-color: #e8f4da; /* Pastel green */
         }
         .pastel-blue td {
-            background-color: #dae8f4 ; /* Pastel blue */
+            background-color: #dae8f4; /* Pastel blue */
         }
         .center {
-				  text-align: center;
-				}
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -48,33 +48,39 @@
         // Function to fetch data from the API
         async function fetchData() {
             try {
-                const response = await fetch('https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates');
-                const data = await response.json();
                 const currentDate = new Date();
-                document.getElementById('lastUpdated').innerText = currentDate.toLocaleString('en-GB', {hour12: true, hour: 'numeric', minute: 'numeric', second: 'numeric', day: '2-digit', month: 'long', year: 'numeric'});
-                
-                // Filter repo rate, prime lending rate, and exchange rate data
-                const repoRateData = data.find(rate => rate.Name === 'Repo rate');
-                const primeLendingRateData = data.find(rate => rate.Name === 'Prime lending rate');
-                const exchangeRateUSDData = data.find(rate => rate.Name === 'Rand per US Dollar');
-                const exchangeRateGBPData = data.find(rate => rate.Name === 'Rand per British Pound');
-                const exchangeRateEURData = data.find(rate => rate.Name === 'Rand per Euro');
-                const exchangeRateJPYData = data.find(rate => rate.Name === 'Rand per Japanese Yen');
+                document.getElementById('lastUpdated').innerText = currentDate.toLocaleString('en-GB', { hour12: true, hour: 'numeric', minute: 'numeric', second: 'numeric', day: '2-digit', month: 'long', year: 'numeric' });
 
-                // Fetch historical dates of rate changes
-                const historicalRatesResponse = await fetch('https://custom.resbank.co.za/SarbWebApi/WebIndicators/OtherIndicators/HistoricalDatesOfRateChanges/');
-                const historicalRatesData = await historicalRatesResponse.json();
+                // Fetch data from the API
+                const [homePageRatesResponse, historicalRatesResponse] = await Promise.all([
+                    fetch('https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates'),
+                    fetch('https://custom.resbank.co.za/SarbWebApi/WebIndicators/OtherIndicators/HistoricalDatesOfRateChanges/')
+                ]);
+
+                // Parse API responses
+                const [homePageRatesData, historicalRatesData] = await Promise.all([
+                    homePageRatesResponse.json(),
+                    historicalRatesResponse.json()
+                ]);
+
+                // Filter relevant data
+                const repoRateData = homePageRatesData.find(rate => rate.Name === 'Repo rate');
+                const primeLendingRateData = homePageRatesData.find(rate => rate.Name === 'Prime lending rate');
+                const exchangeRateUSDData = homePageRatesData.find(rate => rate.Name === 'Rand per US Dollar');
+                const exchangeRateGBPData = homePageRatesData.find(rate => rate.Name === 'Rand per British Pound');
+                const exchangeRateEURData = homePageRatesData.find(rate => rate.Name === 'Rand per Euro');
+                const exchangeRateJPYData = homePageRatesData.find(rate => rate.Name === 'Rand per Japanese Yen');
                 const repoRateChangeDate = new Date(historicalRatesData.find(item => item.TsCode === 'MRDREPOR').ValueDate);
                 const primeLendingRateChangeDate = new Date(historicalRatesData.find(item => item.TsCode === 'MRDPRIME').ValueDate);
 
                 // Populate table with data
                 const tableBody = document.getElementById('rateData');
-                
+
                 // Function to create row
                 function createRow(name, rateType, date, value, isPastelGreen, isPastelBlue) {
-                    const formattedDate = new Date(date).toLocaleDateString('en-GB', {day: '2-digit', month: 'long', year: 'numeric'});
+                    const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
                     const daysDifference = Math.floor((currentDate - date) / (1000 * 60 * 60 * 24));
-                    const daysAgo = isNaN(daysDifference) ? '(Today)' : `(${daysDifference} days ago)`;
+                    const daysAgo = daysDifference === 0 ? '(Today)' : isNaN(daysDifference) ? '' : `(${daysDifference} days ago)`;
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${name}</td>
@@ -108,11 +114,11 @@
         window.onload = fetchData;
     </script>
 
-<div class="center">
-	<a href="https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates" target="_new1">HomePageRates</a>
-</div>
-<div class="center">
-	<a href="https://custom.resbank.co.za/SarbWebApi/WebIndicators/OtherIndicators/HistoricalDatesOfRateChanges/" target="_new2">HistoricalDatesOfRateChanges</a>
-</div>
+    <div class="center">
+        <a href="https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates" target="_new1">HomePageRates</a>
+    </div>
+    <div class="center">
+        <a href="https://custom.resbank.co.za/SarbWebApi/WebIndicators/OtherIndicators/HistoricalDatesOfRateChanges/" target="_new2">HistoricalDatesOfRateChanges</a>
+    </div>
 </body>
 </html>
