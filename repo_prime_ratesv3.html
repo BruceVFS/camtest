@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repo Rate, Prime Lending Rate, and Exchange Rates</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom pastel colors for table rows */
+        tr:nth-child(odd) {
+            background-color: #f0f0f0;
+        }
+        tr:nth-child(even) {
+            background-color: #f6f6f6;
+        }
+        .pastel-green td {
+            background-color: #e8f4da; /* Pastel green */
+        }
+        .pastel-blue td {
+            background-color: #dae8f4; /* Pastel blue */
+        }
+        .center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Repo Rate, Prime Lending Rate, and Exchange Rates</h1>
+        <p>Query performed: <span id="lastUpdated"></span></p>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Rate Type</th> <!-- Renamed from Section Name to Rate Type -->
+                        <th>Published Date</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody id="rateData">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch data from the API
+        async function fetchData() {
+            try {
+                const currentDate = new Date();
+                document.getElementById('lastUpdated').innerText = currentDate.toLocaleString('en-GB', { hour12: true, hour: 'numeric', minute: 'numeric', second: 'numeric', day: '2-digit', month: 'long', year: 'numeric' });
+
+                // Fetch data from the API
+                const [homePageRatesResponse, historicalRatesResponse] = await Promise.all([
+                    fetch('https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates'),
+                    fetch('https://custom.resbank.co.za/SarbWebApi/WebIndicators/OtherIndicators/HistoricalDatesOfRateChanges/')
+                ]);
+
+                // Parse API responses
+                const [homePageRatesData, historicalRatesData] = await Promise.all([
+                    homePageRatesResponse.json(),
+                    historicalRatesResponse.json()
+                ]);
+
+                // Filter relevant data
+                const repoRateData = homePageRatesData.find(rate => rate.Name === 'Repo rate');
+                const primeLendingRateData = homePageRatesData.find(rate => rate.Name === 'Prime lending rate');
+                const exchangeRateUSDData = homePageRatesData.find(rate => rate.Name === 'Rand per US Dollar');
+                const exchangeRateGBPData = homePageRatesData.find(rate => rate.Name === 'Rand per British Pound');
+                const exchangeRateEURData = homePageRatesData.find(rate => rate.Name === 'Rand per Euro');
+                const exchangeRateJPYData = homePageRatesData.find(rate => rate.Name === 'Rand per Japanese Yen');
+                const repoRateChangeDate = new Date(historicalRatesData.find(item => item.TsCode === 'MRDREPOR').ValueDate);
+                const primeLendingRateChangeDate = new Date(historicalRatesData.find(item => item.TsCode === 'MRDPRIME').ValueDate);
+
+                // Populate table with data
+                const tableBody = document.getElementById('rateData');
+
+                // Function to create row
+                function createRow(name, rateType, date, value, isPastelGreen, isPastelBlue) {
+                    const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+                    const daysDifference = Math.floor((currentDate - date) / (1000 * 60 * 60 * 24));
+                    const daysAgo = daysDifference === 0 ? '(Today)' : isNaN(daysDifference) ? '' : `(${daysDifference} days ago)`;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${name}</td>
+                        <td>${rateType}</td>
+                        <td>${formattedDate} ${daysAgo}</td>
+                        <td>${value}</td>
+                    `;
+                    if (isPastelGreen) {
+                        row.classList.add('pastel-green');
+                    } else if (isPastelBlue) {
+                        row.classList.add('pastel-blue');
+                    }
+                    return row;
+                }
+
+                // Append rows to table with different pastel colors
+                tableBody.appendChild(createRow(repoRateData.Name, 'Repurchase rate', repoRateChangeDate, repoRateData.Value, true, false));
+                tableBody.appendChild(createRow(primeLendingRateData.Name, 'Prime lending rate', primeLendingRateChangeDate, primeLendingRateData.Value, true, false));
+                tableBody.appendChild(createRow(exchangeRateUSDData.Name, exchangeRateUSDData.SectionName, exchangeRateUSDData.Date, exchangeRateUSDData.Value, false, true));
+                tableBody.appendChild(createRow(exchangeRateGBPData.Name, exchangeRateGBPData.SectionName, exchangeRateGBPData.Date, exchangeRateGBPData.Value, false, true));
+                tableBody.appendChild(createRow(exchangeRateEURData.Name, exchangeRateEURData.SectionName, exchangeRateEURData.Date, exchangeRateEURData.Value, false, true));
+                tableBody.appendChild(createRow(exchangeRateJPYData.Name, exchangeRateJPYData.SectionName, exchangeRateJPYData.Date, exchangeRateJPYData.Value, false, true));
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('rateData').innerHTML = '<tr><td colspan="4">Error fetching data</td></tr>';
+            }
+        }
+
+        // Call the fetchData function when the page loads
+        window.onload = fetchData;
+    </script>
+
+    <div class="center">
+        <a href="https://custom.resbank.co.za/SarbWebApi/WebIndicators/HomePageRates" target="_new1">HomePageRates</a>
+    </div>
+    <div class="center">
+        <a href="https://custom.resbank.co.za/SarbWebApi/WebIndicators/OtherIndicators/HistoricalDatesOfRateChanges/" target="_new2">HistoricalDatesOfRateChanges</a>
+    </div>
+</body>
+</html>
