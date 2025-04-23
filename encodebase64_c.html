@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Base64 Encoder - Image & PDF</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, textarea, button {
+      display: block;
+      margin: 15px 0;
+      width: 100%;
+    }
+    img, .pdf-preview {
+      max-width: 100%;
+      margin-top: 15px;
+    }
+    .pdf-preview {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+    }
+    button {
+      width: auto;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 200px;
+      background-color: #006400;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 12px;
+      position: fixed;
+      z-index: 1;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.5s, bottom 0.5s;
+    }
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+      bottom: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Base64 Encoder - Image & PDF</h1>
+  <input type="file" id="fileInput" accept="image/*,application/pdf" />
+  <textarea id="base64Output" rows="10" readonly placeholder="Base64 output will appear here (no prefix)"></textarea>
+
+  <button id="copyBtn">Copy to Clipboard</button>
+  <button id="downloadBtn">Download .txt</button>
+  
+  <img id="imagePreview" src="" alt="Image Preview" style="display:none;" />
+  <div id="pdfPreview" class="pdf-preview" style="display:none;">
+    ?? <span id="pdfName"></span>
+  </div>
+
+  <div id="toast">Copied to clipboard!</div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const base64Output = document.getElementById('base64Output');
+    const imagePreview = document.getElementById('imagePreview');
+    const pdfPreview = document.getElementById('pdfPreview');
+    const pdfName = document.getElementById('pdfName');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const toast = document.getElementById('toast');
+
+    let currentFilename = 'base64.txt';
+
+    fileInput.addEventListener('change', function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      currentFilename = file.name.toLowerCase().endsWith('.pdf') ? 'encoded-pdf.txt' : 'encoded-image.txt';
+
+      const reader = new FileReader();
+      reader.onload = function () {
+        const base64WithPrefix = reader.result;
+        const cleanBase64 = base64WithPrefix.split(',')[1];
+        base64Output.value = cleanBase64;
+
+        if (file.type.startsWith('image/')) {
+          imagePreview.src = base64WithPrefix;
+          imagePreview.style.display = 'block';
+          pdfPreview.style.display = 'none';
+        } else if (file.type === 'application/pdf') {
+          imagePreview.style.display = 'none';
+          pdfName.textContent = file.name;
+          pdfPreview.style.display = 'flex';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    copyBtn.addEventListener('click', function () {
+      base64Output.select();
+      base64Output.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    });
+
+    downloadBtn.addEventListener('click', function () {
+      const blob = new Blob([base64Output.value], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentFilename;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
