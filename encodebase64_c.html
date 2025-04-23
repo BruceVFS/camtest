@@ -51,12 +51,33 @@
       opacity: 1;
       bottom: 50px;
     }
+    .display-box {
+      background: #f8f8f8;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-family: monospace;
+      margin-bottom: 20px;
+      overflow-wrap: break-word;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
   <h1>Base64 Encoder - Image & PDF</h1>
+
   <input type="file" id="fileInput" accept="image/*,application/pdf" />
-  <textarea id="base64Output" rows="10" readonly placeholder="Base64 output will appear here (no prefix)"></textarea>
+
+  <div id="droppedDisplay" style="display:none;">
+    <h3>Dropped Prefix (before comma)</h3>
+    <div class="display-box" id="droppedContent"></div>
+  </div>
+
+  <div id="strippedDisplay" style="display:none;">
+    <h3>Stripped Base64 (for attachment field)</h3>
+ <!-- <div class="display-box" id="strippedContent"></div> -->
+ <textarea id="base64Output" rows="10" readonly placeholder="Base64 output will appear here (no prefix)"></textarea>
+  </div>
+
 
   <button id="copyBtn">Copy to Clipboard</button>
   <button id="downloadBtn">Download .txt</button>
@@ -77,6 +98,10 @@
     const copyBtn = document.getElementById('copyBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const toast = document.getElementById('toast');
+    const droppedDisplay = document.getElementById('droppedDisplay');
+    const droppedContent = document.getElementById('droppedContent');
+    const strippedDisplay = document.getElementById('strippedDisplay');
+    const strippedContent = document.getElementById('strippedContent');
 
     let currentFilename = 'base64.txt';
 
@@ -89,9 +114,18 @@
       const reader = new FileReader();
       reader.onload = function () {
         const base64WithPrefix = reader.result;
-        const cleanBase64 = base64WithPrefix.split(',')[1];
-        base64Output.value = cleanBase64;
+        const [droppedPrefix, cleanBase64] = base64WithPrefix.split(',');
 
+        // Show the dropped prefix
+        droppedContent.textContent = droppedPrefix;
+        droppedDisplay.style.display = 'block';
+
+        // Show the stripped portion
+        base64Output.value = cleanBase64;
+        // strippedContent.textContent = cleanBase64;
+        strippedDisplay.style.display = 'block';
+
+        // Show previews
         if (file.type.startsWith('image/')) {
           imagePreview.src = base64WithPrefix;
           imagePreview.style.display = 'block';
