@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CAL • Address Search – Prototype</title>
+  <style>
+    :root{--bg:#a4a6ad;--card:#141620;--ink:#e8eaf1;--muted:#a9afc3;--accent:#61dafb;--ok:#28a745;--warn:#ffcc00;--err:#ff476f;--line:#222637}
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#5f626d,#5f626d 40%,#5f626d);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+    .logo{width:40px;height:40px;border-radius:12px;background:radial-gradient(circle at 30% 30%,#9cf,transparent 40%),radial-gradient(circle at 70% 70%,#6ef,transparent 40%),var(--accent);box-shadow:0 8px 24px rgba(97,218,251,.3)}
+    h1{font-size:22px;margin:0} .sub{color:var(--muted);font-size:12px}
+    .grid{display:grid;grid-template-columns: 1.2fr .8fr;gap:16px}
+    .card{background:linear-gradient(180deg,rgba(97,218,251,.05),transparent 30%),var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.25)}
+    .card h2{font-size:14px;margin:0 0 8px 0;color:#cfe8ff;letter-spacing:.4px}
+    .pad{padding:16px}
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#0f1220;color:var(--ink);outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#7fd7ff;box-shadow:0 0 0 3px rgba(127,215,255,.15)}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .hint{font-size:11px;color:var(--muted)}
+    .hilight{font-size:12px;color:#e2df29}
+    .btn{border:1px solid var(--line);background:#101428;color:var(--ink);padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn.primary{background:linear-gradient(135deg,#1a7bd9,#00b3ff);border:none}
+    .btnbar{display:flex;gap:10px;margin-top:12px}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}
+    .pill.ok{border-color:#1f8642;color:#7ee2a0} .pill.err{border-color:#7b2438;color:#ff9db2}
+    code.pre{display:block;white-space:pre-wrap;word-break:break-word;background:#0c0e18;border:1px solid var(--line);padding:12px;border-radius:12px}
+
+    /* Typeahead */
+    .relative{position:relative;}
+    .dropdown{position:absolute;top:100%;left:0;right:0;background:#47484a;border:1px solid var(--line);border-radius:12px;margin-top:6px;max-height:240px;overflow:auto;z-index:20;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+    .dropdown.hidden{display:none}
+    .opt{padding:10px 12px;border-bottom:1px solid #1b1f2f;cursor:pointer}
+    .opt:last-child{border-bottom:none}
+    .opt:hover{background:#111633}
+    .opt .title{color:#e6f2ff;font-size:13px}
+
+    .row > .full{grid-column:1 / -1}
+    .opt .meta{color:var(--muted);font-size:11px}
+    .footer{margin-top:18px;color:var(--muted);font-size:13px;text-align:center;background:#620404;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Centralised Address Lookup (CAL) – Prototype</h1>
+        <div class="sub">Ctry select • Inteli-text search • ISO 20022 structured responses</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card pad" id="formCard">
+        <h2>Address Form</h2>
+
+        <!-- Row 1: Country (full width) -->
+        <div class="row">
+          <div class="full">
+            <label>Country</label>
+            <select id="ctry">
+              <option value="ZA">ZA – South Africa</option>
+              <option value="DE">DE – Germany</option>
+              <option value="FR">FR – France</option>
+              <option value="GB">GB – United Kingdom</option>
+              <option value="KE">KE – Kenya</option>
+              <option value="NG">NG – Nigeria</option>
+              <option value="US">US – United States</option>
+              <!-- <option value="XX">XX – Default</option> -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 2: Province / State (full width) -->
+        <div class="row">
+          <div class="full">
+            <label id="ctrysubdvsnLabel">State / Province</label>
+            <!-- Dropdown populated from DemoData for selected country -->
+            <select id="ctrysubdvsn"></select>
+          </div>
+        </div>
+
+        <!-- Row 3: Search (full width) -->
+        <div class="row">
+          <div class="relative full">
+            <label class="hilight">Search (city/town • suburb • street)</label>
+            <input id="search" placeholder="Type 3+ chars (e.g., sea poi main)" autocomplete="off" />
+            <div id="dropdown" class="dropdown hidden" role="listbox" aria-label="Suggestions"></div>
+          </div>
+        </div>
+
+        <!-- Row 4: Town/City and Suburb/SubTown (half width each) -->
+        <div class="row">
+          <div>
+            <label>Town / City</label>
+            <input id="twnNm" placeholder="e.g., Cape Town" />
+          </div>
+          <div>
+            <label>Suburb / SubTown</label>
+            <input id="subTown" placeholder="e.g., Sea Point" />
+          </div>
+        </div>
+
+        <!-- Row 5: Street Name and Building Number (half width each) -->
+        <div class="row">
+          <div>
+            <label>Street Name</label>
+            <input id="strtNm" placeholder="e.g., Main Road" />
+          </div>
+          <div>
+            <label>Building Number</label>
+            <input id="bldgNb" placeholder="e.g., 123" />
+          </div>
+        </div>
+
+        <!-- Row 6: Postal Code and Building/Complex/Estate Name (half width each) -->
+        <div class="row">
+          <div>
+            <label>Postal Code</label>
+            <input id="pstCd" placeholder="e.g., 8005" />
+          </div>
+          <div>
+            <label>Building/Complex/Estate Name</label>
+            <input id="bldgNm" placeholder="e.g., Atlantic View" />
+          </div>
+        </div>
+
+        <!-- Row 7: Room (half width; paired with spacer to keep halves) -->
+        <div class="row">
+          <div>
+            <label>Room</label>
+            <input id="room" />
+          </div>
+          <div aria-hidden="true"></div>
+        </div>
+
+        <div class="btnbar">
+<!--          <button class="btn" id="normaliseBtn">Normalise</button>
+              <button class="btn primary" id="validateBtn">Validate</button> -->
+        </div>
+        <div id="verdict" style="margin-top:12px"></div>
+
+      </section>
+
+      <section class="card pad">
+        <h2>Requests & Responses</h2>
+        <div class="pill" id="profileTag">Profile: ZA@demo</div>
+        <label>Request</label>
+        <code class="pre" id="req"></code>
+        <label>Response</label>
+        <code class="pre" id="res"></code>
+      </section>
+    </div>
+
+    <div class="footer">Demo uses local rules, stubbed data and a mock API that returns ISO 20022 structured fields. Hook to `/v1/address/lookup`.</div>
+  </div>
+
+  <script>
+    // ——— Profiles (same semantics as Appendix A) ———
+    const Profiles = {
+      ZA: { ctry:'ZA', version:'demo', rules:[
+        {field:'twnNm', status:'MANDATORY', label:'Town / City', maxLength:64, regex:'.+'},
+        {field:'ctrysubdvsn', status:'EXPECTED', label:'Province', maxLength:64, regex:'.+'},
+        {field:'pstCd', status:'MANDATORY', label:'Postal Code', maxLength:10, regex:'^\\d{4}$', hints:'4 digits'},
+        {field:'strtNm', status:'EXPECTED', label:'Street Name', maxLength:128, regex:'.+'},
+        {field:'bldgNb', status:'EXPECTED', label:'Building Number', maxLength:10, regex:'^[0-9A-Za-z\\-]+$'}
+      ]},
+      GB: { ctry:'GB', version:'demo', rules:[
+        {field:'pstCd', status:'MANDATORY', label:'Postal Code', maxLength:10, regex:'^[A-Z]{1,2}[0-9R][0-9A-Z]? ?[0-9][A-Z]{2}$'},
+        {field:'ctrysubdvsn', status:'NOT_USED', label:'County'},
+        {field:'twnNm', status:'MANDATORY', label:'Post Town'}
+      ]},
+      US: { ctry:'US', version:'demo', rules:[
+        {field:'ctrysubdvsn', status:'MANDATORY', label:'State', regex:'^[A-Z]{2}$', hints:'2-letter code'},
+        {field:'pstCd', status:'MANDATORY', label:'ZIP', regex:'^\\d{5}(-\\d{4})?$'}
+      ]},
+      DE: { ctry:'DE', version:'demo', rules:[
+        {field:'ctrysubdvsn', status:'EXPECTED', label:'Bundesland'},
+        {field:'pstCd', status:'MANDATORY', label:'Postleitzahl', maxLength:5, regex:'^\\d{5}$'},
+        {field:'twnNm', status:'MANDATORY', label:'Stadt / Ort'}
+      ]},
+      FR: { ctry:'FR', version:'demo', rules:[
+        {field:'ctrysubdvsn', status:'EXPECTED', label:'Région'},
+        {field:'pstCd', status:'MANDATORY', label:'Code Postal', regex:'^\\d{5}$'},
+        {field:'twnNm', status:'MANDATORY', label:'Ville'}
+      ]},
+      KE: { ctry:'KE', version:'demo', rules:[
+        {field:'ctrysubdvsn', status:'EXPECTED', label:'County'},
+        {field:'pstCd', status:'EXPECTED', label:'Post Code'},
+        {field:'twnNm', status:'MANDATORY', label:'Town / City'}
+      ]},
+      NG: { ctry:'NG', version:'demo', rules:[
+        {field:'ctrysubdvsn', status:'EXPECTED', label:'State'},
+        {field:'pstCd', status:'EXPECTED', label:'Postal Code'},
+        {field:'twnNm', status:'MANDATORY', label:'Town / City'}
+      ]},
+      XX: { ctry:'XX', version:'demo', rules:[
+        {field:'ctry', status:'MANDATORY', label:'Ctry'},
+        {field:'twnNm', status:'MANDATORY', label:'Town / City'},
+        {field:'strtNm', status:'EXPECTED', label:'Street Name'},
+        {field:'pstCd', status:'EXPECTED', label:'Postal Code'}
+      ]}
+    };
+
+    // ——— Demo dataset with ISO 20022-aligned fields ———
+    const DemoData = {
+      ZA: [
+
+        { address:{ ctry:'ZA', ctrysubdvsn:'Free State', twnNm:'Bloemfontein', subTown:'Noordhoek', strtNm:'Raymond Mhlaba Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Boksburg', subTown:'Beyers Park', strtNm:'North Rand Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Boksburg', subTown:'Boksburg North', strtNm:'Corner Cason Road and Rietfontein Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Boksburg', subTown:'Boksburg West', strtNm:'Rietfontein Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Centurion', subTown:'Eldo Glen', strtNm:'Loti Crescent' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Centurion', subTown:'Erasmia', strtNm:'Andries du Plessis Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Centurion', subTown:'Erasmia', strtNm:'Barbara Coetzer Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Centurion', subTown:'Erasmia', strtNm:'Willem Erasmus Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Cullinan', subTown:'Rayton', strtNm:'R104' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Alexandria', strtNm:'Watt Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Blackheath', strtNm:'Beyers Naudé Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Boksburg', strtNm:'Atlas Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Braamfontein', strtNm:'Jorissen Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Bryanston', strtNm:'United States of America Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'CBD', strtNm:'Commissioner Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Emmarentia', strtNm:'Linden Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Kempton Park', strtNm:'Monument Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Kibler Park', strtNm:'Peggy Vera Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Kwaxuma', strtNm:'Bolani Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Lenasia', strtNm:'Gemsbok Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Lenasia', strtNm:'Guinea Fowl Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Lenasia South', strtNm:'Azalea Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Lenasia South', strtNm:'Oak Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Lenasia South', strtNm:'Peacock Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Lenasia South', strtNm:'Petrea Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Linden', strtNm:'6th Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Linden', strtNm:'7th Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Morningside', strtNm:'Outspan Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Ormonde', strtNm:'Crownwood Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Ormonde', strtNm:'Northern Parkway' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Ormonde', strtNm:'Rente Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Randburg', strtNm:'Cnr Robyn Street & Platina Street Jukskei Meander' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Randburg', strtNm:'Rustenburg Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Randburg', strtNm:'Weltevreden Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Richmond', strtNm:'Clamart Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Rosebank', strtNm:'Bath Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Sandton', strtNm:'Fourways Boulevard' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Sandton', strtNm:'Rivonia & Cullinan Close' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Springfield', strtNm:'Marlborough Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Springfield', strtNm:'Rosettenville Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Windsor Glen', strtNm:'Republic Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Lenasia', subTown:'Lenasia', strtNm:'Protea Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Midrand', subTown:'Vorna Valley', strtNm:'Albertyn Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Mogale City', subTown:'Lammermoor', strtNm:'Lammermoor Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Alphen Park', strtNm:'Selati Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Arcadia', strtNm:'Beatrix Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Faerie Glen', strtNm:'Haymeadow Crescent' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Fairy Glen', strtNm:'Atterbury Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Groenkloof', strtNm:'George Storrar Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Hatfield', strtNm:'Burnett Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Hercules', strtNm:'Van Der Hoff Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Lynnwood', strtNm:'Lynnwood Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Lynnwood Ridge', strtNm:'Lynnwood Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Mahube Valley', strtNm:'Tsamaya Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Menlo Park', strtNm:'Rosemary Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Montana', strtNm:'Veronica Road Montana Crossing' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Val-de-grace', strtNm:'Maroela street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Waverley', strtNm:'Codonia Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Randburg', subTown:'Randburg', strtNm:'4th Avenue South' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Randfontein', subTown:'Greenhills', strtNm:'Homestead Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Randfontein', subTown:'Homelake', strtNm:'Homestead Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Rynfield', subTown:'Benoni', strtNm:'Cnr Pretoria Road & Vlei Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Soweto', subTown:'Dube', strtNm:'Mahalafele Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Soweto', subTown:'Protea North', strtNm:'Ndaba Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Soweto', subTown:'Senoane', strtNm:'Komati Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Soweto', subTown:'Senoane', strtNm:'Mabalane Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Soweto', subTown:'Zone 2', strtNm:'Hekroodt Circle' } },
+
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Pretoria', subTown:'', strtNm:'Rietvallei' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Mahikeng', subTown:'', strtNm:'Sekame Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'', subTown:'', strtNm:'Beach Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'', subTown:'', strtNm:'Empire Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Vredendal', subTown:'', strtNm:'Park Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Lichtenburg', subTown:'', strtNm:'BreÃ« Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Kuruman', subTown:'', strtNm:'Acacia Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Randburg', subTown:'', strtNm:'Lewisham Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Johannesburg', subTown:'', strtNm:'Jubilee Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Lansdowne', subTown:'', strtNm:'Imam Haron Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Mokopane', subTown:'', strtNm:'Pretorius Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'', subTown:'', strtNm:'Vincent Tshabalala Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'', twnNm:'Johannesurg', subTown:'', strtNm:'3rd Road halfway Garden' } },
+
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Vereeniging', subTown:'Roshnee', strtNm:'Bilal Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Vereeniging', subTown:'Three Rivers', strtNm:'Nile Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'Kwamashu', strtNm:'Malandela Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'North Beach', strtNm:'Somtsea Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'Pinetown', strtNm:'Shepstone Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'Reservoir Hills', strtNm:'Mountbatten Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'Shallcross', strtNm:'Shalcross Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'Stamford Hill', strtNm:'Isaiah Ntshangase Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Durban', subTown:'Umbilo', strtNm:'Magwaza Maphalala Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Mtubatuba', subTown:'Nordale', strtNm:'Daffodil Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Mtubatuba', subTown:'River View', strtNm:'Old Mill Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Newcastle', subTown:'Hutten Heights', strtNm:'Volkrust Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Pinetown', subTown:'New Germany', strtNm:'Janine Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Queensburgh', subTown:'Malvern', strtNm:'Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Richards Bay', subTown:'Veld en Vlei', strtNm:'Disa Dives' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'KwaZulu-Natal', twnNm:'Umhlanga Durban North', subTown:'La Lucia', strtNm:'Armstrong Drie' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Mpumalanga', twnNm:'Middelburg', subTown:'Kranspoort', strtNm:'Rooibok Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'North West', twnNm:'Hartbeespoort', subTown:'Broederstroom', strtNm:'Elias Motsoaledi Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'North West', twnNm:'Mahikeng', subTown:'Mmabatho', strtNm:'Sekame Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Athlone', strtNm:'Tembe Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Belhar', strtNm:'Belhar Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Bothasig', strtNm:'Vryburger Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Brackenfell', strtNm:'Old Paarl Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Brooklyn', strtNm:'Koeberg Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Century City', strtNm:'Century City Boulevard' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Constantia', strtNm:'Spaanschemat River Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Delft', strtNm:'Roosendaal Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Green Point', strtNm:'Somerset Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Hermanus', strtNm:'Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Kenilworth', strtNm:'Chichester Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Mandalay', strtNm:'Auber Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Milnerton', strtNm:'Wood Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Mitchells Plain', strtNm:'Cnr Morgenster Road & Weltevreden Parkway' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Mitchells Plain', strtNm:'Simonsig Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Mitchells Plain', strtNm:'Symphony Walk' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Mouille Point', strtNm:'Beach Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Mowbray', strtNm:'Liesbeek Parkway' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Newlands', strtNm:'Boundary Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Newlands', strtNm:'Campground Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Observatory', strtNm:'Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Ottery', strtNm:'Ottery Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Paarl', strtNm:'New Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Parklands', strtNm:'Sandown Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Parow', strtNm:'Voortrekker Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Pelikan Park', strtNm:'Lorikeet Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Phillipi', strtNm:'Stock Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Phillipi', strtNm:'Strandfontein Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Plumstead', strtNm:'Gabriel Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Salt River', strtNm:'Durham Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Sea Point', strtNm:'Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Somerset West', strtNm:'Barker Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Somerset West', strtNm:'Broadway Boulevard' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Somerset West', strtNm:'De Beers Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Somerset West', strtNm:'Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Stellenbosch', strtNm:'Bird Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Strand', strtNm:'Abegglen Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Strand', strtNm:'Beach Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Strand', strtNm:'Fagan Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Table View', strtNm:'Blaauwberg Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Thornton', strtNm:'Cypress Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Vredekloof', strtNm:'Okavango Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Waterfront', strtNm:'South Arm Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Westlake Business Park', strtNm:'Otto Close' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Woodstock', strtNm:'Victoria Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Wynberg', strtNm:'Cavan Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Durbanville', subTown:'Uitzicht', strtNm:'Oslo Crescent' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Durbanville', subTown:'Uitzicht', strtNm:'Rotterdam Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'George', subTown:'Bergsig', strtNm:'Stander Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'George', subTown:'Wilderness', strtNm:'Beacon Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Mossel Bay', subTown:'Bay View', strtNm:'Louis Fourie Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Sea Point', subTown:'Sea Point', strtNm:'Regent Road' } },
+      // Eastern Cape (10)
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'East London', subTown:'Abbotsford', strtNm:'Morris Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'East London', subTown:'Esplanade', strtNm:'Aquarium Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Newton Park', strtNm:'4th Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Walmer', strtNm:'4th Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Walmer', strtNm:'Community Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Walmer', strtNm:'Corner 10th Avenue & Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Walmer', strtNm:'Main Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Walmer', strtNm:'Plane Lane' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Gqeberha', subTown:'Walmer', strtNm:'Union Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Deal Party', strtNm:'Ries Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Humewood', strtNm:'Humewood Road' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Kabega Park', strtNm:'Culemborg Street' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Kwazakele', strtNm:'Cnr Njoli & Meke Streets' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Lorraine', strtNm:'Circular Drive' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Summerstrand', strtNm:'8th Avenue' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Eastern Cape', twnNm:'Port Elizabeth', subTown:'Walmer', strtNm:'Main Road' } },
+        // Western Cape (10)
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Sea Point', strtNm:'Main Road', bldgNb:'123', pstCd:'8005', bldgNm:'Atlantic View' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Rondebosch', strtNm:'Campground Road', bldgNb:'45', pstCd:'7700' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Claremont', strtNm:'Main Road', bldgNb:'89', pstCd:'7708' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Observatory', strtNm:'Lower Main Road', bldgNb:'12', pstCd:'7925' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Woodstock', strtNm:'Victoria Road', bldgNb:'301', pstCd:'7925' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Gardens', strtNm:'Kloof Street', bldgNb:'33', pstCd:'8001' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Stellenbosch', subTown:'Die Boord', strtNm:'Strand Road', bldgNb:'1', pstCd:'7600' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Green Point', strtNm:'Main Road', bldgNb:'75', pstCd:'8005' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Foreshore', strtNm:'Christiaan Barnard St', bldgNb:'18', pstCd:'8001' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Western Cape', twnNm:'Cape Town', subTown:'Century City', strtNm:'Century Boulevard', bldgNb:'5', pstCd:'7441' } },
+        // Gauteng (10)
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Sandton', strtNm:'Rivonia Road', bldgNb:'5', pstCd:'2196' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Rosebank', strtNm:'Oxford Road', bldgNb:'92', pstCd:'2196' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Bryanston', strtNm:'William Nicol Drive', bldgNb:'301', pstCd:'2191' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Fourways', strtNm:'Cedar Road', bldgNb:'14', pstCd:'2055' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Hatfield', strtNm:'Burnett Street', bldgNb:'1265', pstCd:'0083' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Pretoria', subTown:'Brooklyn', strtNm:'Charles Street', bldgNb:'57', pstCd:'0181' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Krugersdorp', subTown:'Kromdraai', strtNm:'Kromdraai Road', bldgNm:'Letamo Game Farm', pstCd:'1739' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Johannesburg', subTown:'Melrose Arch', strtNm:'High Street', bldgNb:'16', pstCd:'2196' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Centurion', subTown:'Irene', strtNm:'Main Road', bldgNb:'2', pstCd:'0062' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Gauteng', twnNm:'Midrand', subTown:'Waterfall', strtNm:'Allandale Road', bldgNb:'7', pstCd:'1685' } },
+        // Kwa-Zulu Natal (10)
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Durban', subTown:'Morningside', strtNm:'Florida Road', bldgNb:'190', pstCd:'4001' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Durban', subTown:'Umhlanga', strtNm:'Chartwell Drive', bldgNb:'12', pstCd:'4319' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Durban', subTown:'Berea', strtNm:'Musgrave Road', bldgNb:'115', pstCd:'4001' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Pietermaritzburg', subTown:'Scottsville', strtNm:'Chief Albert Luthuli St', bldgNb:'321', pstCd:'3201' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Ballito', subTown:'Dolphin Coast', strtNm:'Leonora Drive', bldgNb:'6', pstCd:'4420' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Howick', subTown:'Merrivale', strtNm:'Main Street', bldgNb:'77', pstCd:'3291' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Durban', subTown:'Pinelands', strtNm:'Dropped Street', bldgNb:'3666', pstCd:'3145' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Durban North', subTown:'Sunningdale', strtNm:'Umhlanga Rocks Dr', bldgNb:'25', pstCd:'4051' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Hillcrest', subTown:'Assagay', strtNm:'Old Main Road', bldgNb:'10', pstCd:'3650' } },
+        { address:{ ctry:'ZA', ctrysubdvsn:'Kwa-Zulu Natal', twnNm:'Umhlanga', subTown:'La Lucia', strtNm:'Armstrong Avenue', bldgNb:'3', pstCd:'4051' } }
+      ],
+      GB: [
+        { address:{ ctry:'GB', twnNm:'London', subTown:'Bloomsbury', strtNm:'Gower Street', bldgNb:'50', pstCd:'WC1E 6BT' } },
+        { address:{ ctry:'GB', twnNm:'Cambridge', subTown:'Chesterton', strtNm:'Milton Road', bldgNb:'125', pstCd:'CB4 1XE' } }
+      ],
+      US: [
+        // New York (NY) — 10
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'New York', subTown:'Manhattan', strtNm:'7th Avenue', bldgNb:'350', pstCd:'10001' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'New York', subTown:'Brooklyn', strtNm:'Bedford Ave', bldgNb:'820', pstCd:'11205' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'New York', subTown:'Queens', strtNm:'Roosevelt Ave', bldgNb:'45-12', pstCd:'11372' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'New York', subTown:'Harlem', strtNm:'Lenox Ave', bldgNb:'210', pstCd:'10027' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'Buffalo', subTown:'Allentown', strtNm:'Delaware Ave', bldgNb:'955', pstCd:'14209' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'Rochester', subTown:'Park Ave', strtNm:'Park Avenue', bldgNb:'312', pstCd:'14607' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'Syracuse', subTown:'Downtown', strtNm:'W Jefferson St', bldgNb:'115', pstCd:'13202' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'Albany', subTown:'Center Square', strtNm:'Lark St', bldgNb:'254', pstCd:'12210' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'Yonkers', subTown:'Getty Square', strtNm:'S Broadway', bldgNb:'18', pstCd:'10701' } },
+        { address:{ ctry:'US', ctrysubdvsn:'NY', twnNm:'New York', subTown:'Chelsea', strtNm:'W 23rd St', bldgNb:'120', pstCd:'10011' } },
+        // California (CA) — 10
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'San Francisco', subTown:'SOMA', strtNm:'Market Street', bldgNb:'1355', pstCd:'94103' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Los Angeles', subTown:'Hollywood', strtNm:'Sunset Blvd', bldgNb:'6800', pstCd:'90028' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'San Jose', subTown:'Downtown', strtNm:'S 1st St', bldgNb:'200', pstCd:'95113' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'San Diego', subTown:'Gaslamp Quarter', strtNm:'5th Ave', bldgNb:'530', pstCd:'92101' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Oakland', subTown:'Uptown', strtNm:'Telegraph Ave', bldgNb:'1900', pstCd:'94612' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Sacramento', subTown:'Midtown', strtNm:'J St', bldgNb:'1801', pstCd:'95811' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Irvine', subTown:'Spectrum', strtNm:'Spectrum Center Dr', bldgNb:'95', pstCd:'92618' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Pasadena', subTown:'Old Pasadena', strtNm:'Colorado Blvd', bldgNb:'400', pstCd:'91101' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Long Beach', subTown:'Downtown', strtNm:'Pine Ave', bldgNb:'245', pstCd:'90802' } },
+        { address:{ ctry:'US', ctrysubdvsn:'CA', twnNm:'Fremont', subTown:'Centerville', strtNm:'Fremont Blvd', bldgNb:'38801', pstCd:'94536' } },
+        // Texas (TX) — 10 (new)
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Austin', subTown:'Downtown', strtNm:'Congress Ave', bldgNb:'600', pstCd:'78701' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Dallas', subTown:'Deep Ellum', strtNm:'Main St', bldgNb:'2710', pstCd:'75226' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Houston', subTown:'Midtown', strtNm:'Bagby St', bldgNb:'2400', pstCd:'77006' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'San Antonio', subTown:'River Walk', strtNm:'E Commerce St', bldgNb:'110', pstCd:'78205' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Plano', subTown:'Legacy', strtNm:'Legacy Dr', bldgNb:'7200', pstCd:'75024' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Fort Worth', subTown:'Cultural District', strtNm:'Camp Bowie Blvd', bldgNb:'3400', pstCd:'76107' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'El Paso', subTown:'Downtown', strtNm:'N Oregon St', bldgNb:'201', pstCd:'79901' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Irving', subTown:'Las Colinas', strtNm:'N O Connor Blvd', bldgNb:'5215', pstCd:'75039' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Round Rock', subTown:'La Frontera', strtNm:'Louis Henna Blvd', bldgNb:'1300', pstCd:'78664' } },
+        { address:{ ctry:'US', ctrysubdvsn:'TX', twnNm:'Sugar Land', subTown:'Town Square', strtNm:'Texas Dr', bldgNb:'15958', pstCd:'77479' } },
+        // Washington (WA) — 10 (new)
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Seattle', subTown:'Capitol Hill', strtNm:'Broadway E', bldgNb:'915', pstCd:'98102' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Seattle', subTown:'Fremont', strtNm:'N 36th St', bldgNb:'3501', pstCd:'98103' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Bellevue', subTown:'Downtown', strtNm:'NE 4th St', bldgNb:'500', pstCd:'98004' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Redmond', subTown:'Overlake', strtNm:'NE 24th St', bldgNb:'1525', pstCd:'98052' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Tacoma', subTown:'Hilltop', strtNm:'S 11th St', bldgNb:'715', pstCd:'98405' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Kirkland', subTown:'Totem Lake', strtNm:'120th Ave NE', bldgNb:'12410', pstCd:'98034' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Spokane', subTown:'Brownes Addition', strtNm:'W 2nd Ave', bldgNb:'151', pstCd:'99201' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Everett', subTown:'Riverside', strtNm:'W Marine View Dr', bldgNb:'1700', pstCd:'98201' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Olympia', subTown:'Downtown', strtNm:'Capitol Way S', bldgNb:'600', pstCd:'98501' } },
+        { address:{ ctry:'US', ctrysubdvsn:'WA', twnNm:'Bellingham', subTown:'Fairhaven', strtNm:'Harris Ave', bldgNb:'1106', pstCd:'98225' } }
+      ],
+      // Europe additions — Germany (Bavaria) & France (Île-de-France), 10 each
+      DE: [
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Munich', subTown:'Altstadt-Lehel', strtNm:'Maximilianstraße', bldgNb:'12', pstCd:'80539' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Munich', subTown:'Schwabing', strtNm:'Leopoldstraße', bldgNb:'45', pstCd:'80802' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Nuremberg', subTown:'Mitte', strtNm:'Karolinenstraße', bldgNb:'7', pstCd:'90402' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Augsburg', subTown:'Innenstadt', strtNm:'Maximilianstraße', bldgNb:'66', pstCd:'86150' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Regensburg', subTown:'Altstadt', strtNm:'Ludwigstraße', bldgNb:'21', pstCd:'93047' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Würzburg', subTown:'Altstadt', strtNm:'Domstraße', bldgNb:'9', pstCd:'97070' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Ingolstadt', subTown:'Nordwest', strtNm:'Harderstraße', bldgNb:'3', pstCd:'85049' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Passau', subTown:'Altstadt', strtNm:'Ludwigsplatz', bldgNb:'5', pstCd:'94032' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Bamberg', subTown:'Gärtnerstadt', strtNm:'Lange Straße', bldgNb:'14', pstCd:'96047' } },
+        { address:{ ctry:'DE', ctrysubdvsn:'Bavaria', twnNm:'Erlangen', subTown:'Zentrum', strtNm:'Nürnberger Straße', bldgNb:'25', pstCd:'91052' } }
+      ],
+      FR: [
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Paris', subTown:'1er', strtNm:'Rue de Rivoli', bldgNb:'99', pstCd:'75001' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Paris', subTown:'3e', strtNm:'Rue de Bretagne', bldgNb:'23', pstCd:'75003' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Paris', subTown:'7e', strtNm:'Avenue de la Bourdonnais', bldgNb:'45', pstCd:'75007' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Paris', subTown:'8e', strtNm:'Avenue des Champs-Élysées', bldgNb:'50', pstCd:'75008' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Paris', subTown:'11e', strtNm:'Rue Oberkampf', bldgNb:'72', pstCd:'75011' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Boulogne-Billancourt', subTown:'Silk', strtNm:'Rue Gallieni', bldgNb:'112', pstCd:'92100' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Versailles', subTown:'Notre-Dame', strtNm:'Rue de la Paroisse', bldgNb:'14', pstCd:'78000' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Saint-Denis', subTown:'Centre', strtNm:'Rue Gabriel Péri', bldgNb:'9', pstCd:'93200' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Nanterre', subTown:'Préfecture', strtNm:'Avenue Joliot-Curie', bldgNb:'33', pstCd:'92000' } },
+        { address:{ ctry:'FR', ctrysubdvsn:'Île-de-France', twnNm:'Créteil', subTown:'Mont-Mesly', strtNm:'Avenue du Général de Gaulle', bldgNb:'10', pstCd:'94000' } }
+      ],
+      // Africa additions — Kenya (Nairobi County) & Nigeria (Lagos State), 10 each
+      KE: [
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'Westlands', strtNm:'Waiyaki Way', bldgNb:'187', pstCd:'00800' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'Kilimani', strtNm:'Argwings Kodhek Rd', bldgNb:'56', pstCd:'00100' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'Karen', strtNm:'Ngong Rd', bldgNb:'321', pstCd:'00502' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'Upper Hill', strtNm:'Haille Selassie Ave', bldgNb:'12', pstCd:'00100' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'Lavington', strtNm:'James Gichuru Rd', bldgNb:'8', pstCd:'00603' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Westlands', twnNm:'Nairobi', subTown:'Gigiri', strtNm:'United Nations Ave', bldgNb:'9', pstCd:'00601' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Westlands', twnNm:'Nairobi', subTown:'Eastleigh', strtNm:'General Waruingi St', bldgNb:'44', pstCd:'00610' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'South B', strtNm:'Mombasa Rd', bldgNb:'5', pstCd:'00100' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Westlands', twnNm:'Nairobi', subTown:'Parklands', strtNm:'Limuru Rd', bldgNb:'70', pstCd:'00623' } },
+        { address:{ ctry:'KE', ctrysubdvsn:'Nairobi County', twnNm:'Nairobi', subTown:'Kileleshwa', strtNm:'Siaya Rd', bldgNb:'3', pstCd:'00100' } }
+      ],
+      NG: [
+        { address:{ ctry:'NG', ctrysubdvsn:'Lagos State', twnNm:'Lagos', subTown:'Victoria Island', strtNm:'Adeola Odeku St', bldgNb:'15', pstCd:'101241' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Lagos State', twnNm:'Lagos', subTown:'Ikoyi', strtNm:'Awolowo Rd', bldgNb:'47', pstCd:'106104' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Lagos State', twnNm:'Lagos', subTown:'Lekki Phase 1', strtNm:'Admiralty Way', bldgNb:'21', pstCd:'105102' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Kebbi', twnNm:'Lagos', subTown:'Yaba', strtNm:'Herbert Macaulay Way', bldgNb:'300', pstCd:'101245' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Kebbi', twnNm:'Lagos', subTown:'Surulere', strtNm:'Bode Thomas St', bldgNb:'9', pstCd:'101283' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Lagos State', twnNm:'Lagos', subTown:'Maryland', strtNm:'Mobolaji Bank Anthony Way', bldgNb:'12', pstCd:'100211' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Nasarawa', twnNm:'Lagos', subTown:'Ikeja', strtNm:'Allen Ave', bldgNb:'18', pstCd:'100271' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Nasarawa', twnNm:'Lagos', subTown:'Ojodu', strtNm:'Berger Rd', bldgNb:'5', pstCd:'100213' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Lagos State', twnNm:'Lagos', subTown:'Apapa', strtNm:'Creek Rd', bldgNb:'2', pstCd:'101252' } },
+        { address:{ ctry:'NG', ctrysubdvsn:'Lagos State', twnNm:'Lagos', subTown:'Epe', strtNm:'Lusada Rd', bldgNb:'7', pstCd:'106101' } }
+      ],
+      XX: []
+    };
+
+    // ——— Helpers for Country Subdivision Dropdown ———
+    function uniqueSubdivisionsFor(ctry){
+      const pool = (DemoData[ctry] || []).map(x => x.address).map(a => a.ctrysubdvsn).filter(Boolean);
+      return [...new Set(pool)].sort((a,b)=>String(a).localeCompare(String(b)));
+    }
+
+    function populateSubdivisionDropdown(ctry, preselect){
+      const sel = document.getElementById('ctrysubdvsn');
+      sel.innerHTML = '';
+      const list = uniqueSubdivisionsFor(ctry);
+      // Add an empty option first
+      const empty = document.createElement('option');
+      empty.value = '';
+      empty.textContent = list.length ? 'Select…' : '—';
+      sel.appendChild(empty);
+      for (const name of list){
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      }
+      sel.disabled = list.length === 0;
+      if (preselect){ sel.value = preselect; }
+    }
+
+    // ——— Mock API: lookup with free-text across twnNm, subTown, strtNm (EXCLUDES ctrysubdvsn) ———
+    const MockApi = {
+      async getProfile(ctry){ return Profiles[ctry] || Profiles.XX; },
+      async lookup(params){
+        const { ctry, query, ctrysubdvsn } = params;
+        const poolAll = (DemoData[ctry] || []).map(x => x.address);
+        // If a subdivision is selected, restrict results to ONLY that subdivision — but do not search on it
+        const pool = ctrysubdvsn ? poolAll.filter(a => (a.ctrysubdvsn || '') === ctrysubdvsn) : poolAll;
+        const q = (query||'').toLowerCase();
+        const hits = pool.filter(a => [a.twnNm,a.subTown,a.strtNm]
+          .filter(Boolean).some(v => v.toLowerCase().includes(q)));
+        return { page:1, size:Math.min(hits.length,20), nextCursor:null, results: hits.slice(0,20).map((a,i)=>({ id:`${ctry}_demo_${i+1}`, confidence:0.9 - i*0.05, source:'demo', address:a })) };
+      },
+      async validate(body){
+        const { address } = body; const profile = Profiles[address.ctry] || Profiles.XX; const fields = {}; let ok=true;
+        for (const rule of profile.rules){
+          if (rule.status==='NOT_USED') continue;
+          const val = address[rule.field] || '';
+          const needed = rule.status==='MANDATORY';
+          const re = rule.regex ? new RegExp(rule.regex,'i') : null;
+          let status = 'OK';
+          if (needed && !val) { status='MISSING'; ok=false; }
+          else if (val && re && !re.test(val)) { status='INVALID'; ok=false; }
+          fields[rule.field] = { status };
+        }
+        return { verdict: ok? 'VALID':'INVALID', fields, profile:{ ctry:profile.ctry, version:profile.version } };
+      },
+      async normalise(body){
+        const a = {...body.address};
+        if (a.strtNm) a.strtNm = a.strtNm.replace(/\brd\b/i,'Road').replace(/\bst\b/i,'Street').replace(/\bave\b/i,'Avenue').replace(/\bdr\b/i,'Drive');
+        for (const k of ['twnNm','subTown','district']) if (a[k]) a[k] = a[k].replace(/\b\w/g, c => c.toUpperCase());
+        return { address:a, changes:['title-case + common expansions'] };
+      }
+    };
+
+    // ——— UI logic ———
+    const $ = id => document.getElementById(id);
+    const fields = ['ctrysubdvsn','twnNm','subTown','strtNm','bldgNb','bldgNm','pstCd','room'];
+
+    function collectAddress(){
+      const a = { ctry: $('ctry').value };
+      for (const f of fields){ const el=$(f); if (el && el.value) a[f]=el.value.trim(); }
+      return a;
+    }
+
+    async function applyProfile(ctry){
+      const p = await MockApi.getProfile(ctry);
+      $('profileTag').textContent = `Profile: ${p.ctry}@${p.version}`;
+      for (const f of fields){
+        const el=$(f); if (!el) continue;
+        const rule = (p.rules||[]).find(r => r.field===f);
+        const labelEl = el.previousElementSibling;
+        if (rule){
+          if (labelEl && rule.label) labelEl.textContent = rule.label;
+          // For selects, maxLength is ignored, but harmless if present
+          el.maxLength = rule.maxLength || 256;
+          el.placeholder && (el.placeholder = rule.hints || el.placeholder);
+          el.dataset.regex = rule.regex || '';
+          el.dataset.status = rule.status || 'OPTIONAL';
+          el.parentElement.style.display = rule.status==='NOT_USED' ? 'none' : '';
+          el.setAttribute('aria-required', rule.status==='MANDATORY');
+        } else {
+          el.parentElement.style.display = '';
+          el.dataset.regex = '';
+          el.dataset.status = 'OPTIONAL';
+        }
+      }
+      // Refresh subdivision options for current country
+      populateSubdivisionDropdown(ctry);
+    }
+
+    // ——— Typeahead ———
+    let typingTimer; const DEBOUNCE=300;
+    $('search').addEventListener('input', () => {
+      clearTimeout(typingTimer);
+      const term = $('search').value.trim();
+      if (term.length < 3){ hideDropdown(); return; }
+      typingTimer = setTimeout(runLookup, DEBOUNCE);
+    });
+
+    function hideDropdown(){ $('dropdown').classList.add('hidden'); $('dropdown').innerHTML=''; }
+
+    function renderOptions(list){
+      const el = $('dropdown');
+      if (!list.length){ el.classList.add('hidden'); el.innerHTML=''; return; }
+      el.classList.remove('hidden');
+      el.innerHTML = list.map(r => {
+        const a = r.address;
+        const title = `${a.bldgNb? a.bldgNb+' ' : ''}${a.strtNm||''}`.trim() || (a.subTown||a.twnNm||'');
+        const meta = [a.subTown,a.twnNm,a.ctrysubdvsn,a.pstCd].filter(Boolean).join(' • ');
+        return `<div class="opt" role="option" data-json='${JSON.stringify(a).replace(/'/g,"&#39;")}'><div class="title">${title}</div><div class="meta">${meta}</div></div>`;
+      }).join('');
+      [...el.querySelectorAll('.opt')].forEach(opt => opt.addEventListener('click', () => {
+        const a = JSON.parse(opt.getAttribute('data-json').replace(/&#39;/g,"'"));
+        populateForm(a); hideDropdown();
+        const req = `GET /v1/address/lookup?ctry=${a.ctry}&query=${encodeURIComponent(buildQuery(a))}`;
+        const res = JSON.stringify({ results:[{ id:'sel', confidence:0.97, source:'demo', address:a }] }, null, 2);
+        $('req').textContent = req; $('res').textContent = res;
+      }));
+    }
+
+    // Build query EXCLUDING ctrysubdvsn
+    function buildQuery(a){ return [a.twnNm,a.subTown,a.strtNm].filter(Boolean).join(' '); }
+
+    async function runLookup(){
+      const q = $('search').value.trim(); const ctry = $('ctry').value; const sdiv = $('ctrysubdvsn')?.value || '';
+      const req = `GET /v1/address/lookup?ctry=${ctry}&query=${encodeURIComponent(q)}${sdiv?`&ctrysubdvsn=${encodeURIComponent(sdiv)}`:''}`;
+      const resp = await MockApi.lookup({ ctry, query:q, ctrysubdvsn: sdiv || null });
+      $('req').textContent = req; $('res').textContent = JSON.stringify(resp, null, 2);
+      renderOptions(resp.results || []);
+    }
+
+    function populateForm(a){
+      for (const k of fields){ if ($(k)) $(k).value = a[k] || ''; }
+      if ($('ctry')) $('ctry').value = a.ctry || $('ctry').value;
+      // Ensure dropdown reflects the selected subdivision
+      populateSubdivisionDropdown(a.ctry || $('ctry').value, a.ctrysubdvsn || '');
+    }
+
+    // Buttons & events
+    $('ctry').addEventListener('change', e => { 
+      applyProfile(e.target.value); 
+      hideDropdown(); 
+      $('search').value=''; 
+      // Clear previous selection
+      const sel = $('ctrysubdvsn'); if (sel) sel.value = '';
+    });
+
+    $('validateBtn').addEventListener('click', async () =>{
+      const body = { address: collectAddress(), strict:true };
+      const req = 'POST /v1/address/validate\n' + JSON.stringify(body,null,2);
+      const res = JSON.stringify(await MockApi.validate(body), null, 2);
+      $('req').textContent = req; $('res').textContent = res;
+      const verdict = JSON.parse(res).verdict;
+      $('verdict').innerHTML = `<span class="pill ${verdict==='VALID'?'ok':'err'}">Verdict: ${verdict}</span>`;
+    });
+
+    $('normaliseBtn').addEventListener('click', async () =>{
+      const body = { address: collectAddress() };
+      const req = 'POST /v1/address/normalise\n' + JSON.stringify(body,null,2);
+      const res = JSON.stringify(await MockApi.normalise(body), null, 2);
+      $('req').textContent = req; $('res').textContent = res;
+    });
+
+    // init
+    applyProfile('ZA');
+  </script>
+</body>
+</html>
