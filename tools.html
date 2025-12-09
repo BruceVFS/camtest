@@ -1,384 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bruce's Tools</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
   <style>
-    .card-title {
-      margin-top: 1rem;
-      font-size: 1.3em;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
     }
-    .icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #111827;
+      background:
+        radial-gradient(circle at top left, rgba(0, 0, 0, 0.03) 0, transparent 60%),
+        radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.03) 0, transparent 60%),
+        #f7f7f9;
     }
-    .color-red {
-      color: red;
+
+    .tools-section {
+      padding: 48px 16px 64px;
     }
-    .color-orange {
-      color: orange;
+
+    .tools-container {
+      max-width: 1280px;
+      margin: 0 auto;
     }
-    .color-cyan {
-      color: cyan;
+
+    /* Header "card" */
+    .tools-header-card {
+      background: linear-gradient(135deg, #ffffff, #f3f4f6);
+      border-radius: 28px;
+      padding: 22px 28px;
+      margin-bottom: 32px;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .color-black {
-      color: black;
+
+    .tools-header-icon {
+      font-size: 2.6rem;
+      color: #2c17a1;
+      flex-shrink: 0;
     }
-    .color-turquoise {
-      color: turquoise;
+
+    .tools-header-title {
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
     }
-    .color-green {
-      color: green;
+
+    /* Grid of cards */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 24px;
     }
-    .color-blue {
-      color: blue;
+
+    /* Individual tool cards */
+    .tool-card {
+      position: relative;
+      background: linear-gradient(180deg, #ffffff, #f5f5f7);
+      border-radius: 26px;
+      padding: 24px 20px 64px;
+      box-shadow: 0 18px 35px rgba(48, 60, 90, 0.06);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      overflow: visible;
     }
-    .color-indigo {
-      color: indigo;
+
+    .tool-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 45px rgba(15, 23, 42, 0.12);
     }
-    .color-violet {
-      color: violet;
+
+    .tool-icon {
+      font-size: 0rem;
+      margin-bottom: 1px;
+      color: #2c17a1;
     }
-    .color-gray {
-    	color: #eeeeee
+
+    .tool-icon i + i {
+      margin-left: 6px;
     }
-    /* Ensure all cards have the same height */
-    .card {
-      height: 100%;
-    }    
+
+    .tool-title {
+      font-size: 1rem;
+      font-weight: 900;
+      line-height: 3;
+    }
+
+    /* Bottom tab */
+    .tool-tab {
+      position: absolute;
+      bottom: 0;
+      width: 44%;
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom-left-radius: 26px;
+      border-bottom-right-radius: 26px;
+      color: #ffffff;
+    }
+
+    .tool-tab i {
+      font-size: 2.0rem;
+      color: #ffffff;
+    }
+
+    /* Odd cards: red tab, left side */
+    .tools-grid .tool-card:nth-child(odd) .tool-tab {
+      background: #2c17a1;
+      left: 0;
+      border-top-right-radius: 40px;
+    }
+
+    /* Even cards: black tab, right side */
+    .tools-grid .tool-card:nth-child(even) .tool-tab {
+      background: #000000;
+      right: 0;
+      border-top-left-radius: 40px;
+    }
+
+    /* Small screens */
+    @media (max-width: 640px) {
+      .tools-header-card {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .tools-header-title {
+        font-size: 1.4rem;
+      }
+
+      .tool-card {
+        padding: 20px 18px 60px;
+      }
+    }
   </style>
 </head>
 <body>
-  <section class="section">
-    <div class="container">
-      <div class="columns is-multiline">
-
-        <div class="column is-12">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <p class="card-title title is-size-3 color-indigo">
-               <i class="fa-solid fa-user-astronaut is-size-1 color-indigo"></i>
-                Bruce's Handy Tools
-              </p>
-            </div>
-          </div>
+  <section class="tools-section">
+    <div class="tools-container">
+      <header class="tools-header-card">
+        <div class="tools-header-icon">
+          <i class="fa-solid fa-user-astronaut"></i>
         </div>
-
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="generate_guids_4.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-cogs"></i>
-              </a>
-              <p class="card-title title">
-                <a href="generate_guids_4.html" target="_blank" >GUID Generator</a>
-              </p>
-            </div>
-          </div>
+        <div class="tools-header-title">
+          Bruce's Handy Tools
         </div>
+      </header>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="generate_emeis_4.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-cogs"></i>
-              </a>
-              <p class="card-title title">
-                <a href="generate_emeis_4.html" target="_blank" >IMEI Generator</a>
-              </p>
+      <div class="tools-grid">
+        <!-- 1 -->
+        <a href="generate_guids_4.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-cogs"></i>
             </div>
+            <h3 class="tool-title">GUID Generator</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-
-        
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="password_gen.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-key"></i><i class="fas fa-lock"></i>
-              </a>
-              <p class="card-title title">
-                <a href="password_gen.html" target="_blank" >Password Generator</a>
-              </p>
+        <!-- 2 -->
+        <a href="generate_emeis_4.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-cogs"></i>
             </div>
+            <h3 class="tool-title">IMEI Generator</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        
-
-        
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered color-indigo">
-              <a href="grooming_questions_01.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-hand-sparkles"></i>
-              </a>
-              <p class="card-title title">
-                <a href="grooming_questions_01.html" target="_blank" >Grooming Questions</a>
-              </p>
+        <!-- 3 -->
+        <a href="password_gen.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-key"></i><i class="fas fa-lock"></i>
             </div>
+            <h3 class="tool-title">Password Generator</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="imei.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-mobile-alt"></i>
-              </a>
-              <p class="card-title title">
-                <a href="imei.html" target="_blank" >Get IMEI</a>
-              </p>
+        <!-- 4 -->
+        <a href="grooming_questions_01.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-hand-sparkles"></i>
             </div>
+            <h3 class="tool-title">Grooming Questions</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="prorataVS_API_mock.v2.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-calculator"></i>
-              </a>
-              <p class="card-title title">
-                <a href="prorataVS_API_mock.v2.html" target="_blank" >Pro Rata Calculator</a>
-              </p>
+        <!-- 5 -->
+        <a href="imei.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-mobile-alt"></i>
             </div>
+            <h3 class="tool-title">Get IMEI</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="search_tac2.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-search"></i>
-              </a>
-              <p class="card-title title">
-                <a href="search_tac2.html" target="_blank" >T.A.C. Search II</a>
-              </p>
+        <!-- 6 -->
+        <a href="prorataVS_API_mock.v2.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-calculator"></i>
             </div>
+            <h3 class="tool-title">Pro Rata Calculator</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="search_tac3.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-search"></i>
-              </a>
-              <p class="card-title title">
-                <a href="search_tac3.html" target="_blank" >T.A.C. Search III</a>
-              </p>
+        <!-- 7 -->
+        <a href="search_tac2.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-search"></i>
             </div>
+            <h3 class="tool-title">T.A.C. Search II</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="take_a_picture.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-camera"></i>
-              </a>
-              <p class="card-title title">
-                <a href="take_a_picture.html" target="_blank" >Camera Access Example: Picture</a>
-              </p>
+        <!-- 8 -->
+        <a href="search_tac3.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-search"></i>
             </div>
+            <h3 class="tool-title">T.A.C. Search III</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="take_a_picture3.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-camera"></i>
-              </a>
-              <p class="card-title title">
-                <a href="take_a_picture3.html" target="_blank" >Camera Access Example: Picture & Meta Data</a>
-              </p>
+        <!-- 9 -->
+        <a href="take_a_picture.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-camera"></i>
             </div>
+            <h3 class="tool-title">Camera Access: Picture</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="take_a_video.02.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-video"></i>
-              </a>
-              <p class="card-title title">
-                <a href="take_a_video.02.html" target="_blank" >Camera Access Example: Video</a>
-              </p>
+        <!-- 10 -->
+        <a href="take_a_picture3.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-camera"></i>
             </div>
+            <h3 class="tool-title">Camera Access: Picture &amp; Meta Data</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="fdirating.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-fire"></i>
-              </a>
-              <p class="card-title title">
-                <a href="fdirating.html" target="_blank" >FDI - Fire Danger Index</a>
-              </p>
+        <!-- 11 -->
+        <a href="take_a_video.02.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-video"></i>
             </div>
+            <h3 class="tool-title">Camera Access: Video</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="create_parameters.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-solid fa-user-secret"></i>
-              </a>
-              <p class="card-title title">
-                <a href="create_parameters.html" target="_blank" >Parameter Capture and URL Encoding</a>
-              </p>
+        <!-- 12 -->
+        <a href="fdirating.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-fire"></i>
             </div>
+            <h3 class="tool-title">FDI – Fire Danger Index</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="fileupload3.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-cloud-upload-alt"></i>
-              </a>
-              <p class="card-title title">
-                <a href="fileupload3.html" target="_blank" >File Upload Page</a>
-              </p>
+        <!-- 13 -->
+        <a href="create_parameters.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-solid fa-user-secret"></i>
             </div>
+            <h3 class="tool-title">Parameter Capture &amp; URL Encoding</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="tshirt_sizing_points_v3.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fas fa-cash-register"></i>
-              </a>
-              <p class="card-title title">
-                <a href="tshirt_sizing_points_v3.html" target="_blank" >T-Shirt Sizing / Points Calculator</a>
-              </p>
+        <!-- 14 -->
+        <a href="fileupload3.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-cloud-upload-alt"></i>
             </div>
+            <h3 class="tool-title">File Upload Page</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="leavepage.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-solid fa-person-through-window"></i>
-              </a>
-              <p class="card-title title">
-                <a href="leavepage.html" target="_blank" >Catch User Leaving</a>
-              </p>
+        <!-- 15 -->
+        <a href="tshirt_sizing_points_v3.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fas fa-cash-register"></i>
             </div>
+            <h3 class="tool-title">T-Shirt Sizing / Points Calculator</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="build_questions.html" target="_blank" class="icon is-size-3 color-indigo">
+        <!-- 16 -->
+        <a href="leavepage.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-solid fa-person-through-window"></i>
+            </div>
+            <h3 class="tool-title">Catch User Leaving</h3>
+          </div>
+          <div class="tool-tab"></div>
+        </a>
+
+        <!-- 17 -->
+        <a href="build_questions.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
               <i class="fa-solid fa-person-circle-question"></i>
-              </a>
-              <p class="card-title title">
-                <a href="build_questions.html" target="_blank" >Generate Security Questions</a>
-              </p>
             </div>
+            <h3 class="tool-title">Generate Security Questions</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="win10update.html" target="_blank" class="icon is-size-3 color-indigo">
+        <!-- 18 -->
+        <a href="win10update.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
               <i class="fa-brands fa-windows"></i>
-              </a>
-              <p class="card-title title">
-                <a href="win10update.html" target="_blank" >Windows 10 Update (Click for fullscreen)</a><br>
-                <a href="win11update.html" target="_blank" >Windows 11 Update (Click for fullscreen)</a>
-              </p>
             </div>
+            <h3 class="tool-title">Windows 10 Update (Fullscreen)</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="repo_prime_ratesv2.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-solid fa-money-bill-1-wave"></i>
-              </a>
-              <p class="card-title title">
-                <a href="repo_prime_ratesv2.html" target="_blank" >Repo Rate, Prime Lending Rate, and Exchange Rates</a>
-              </p>
+        <!-- 19 -->
+        <a href="win11update.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-brands fa-windows"></i>
             </div>
+            <h3 class="tool-title">Windows 11 Update (Fullscreen)</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="encodebase64_c.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-regular fa-image"></i>
-              </a>
-              <p class="card-title title">
-                <a href="encodebase64_c.html" target="_blank" >Base64 Encoder</a>
-              </p>
+        <!-- 20 -->
+        <a href="repo_prime_ratesv2.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-solid fa-money-bill-1-wave"></i>
             </div>
+            <h3 class="tool-title">Repo Rate, Prime Lending &amp; FX Rates</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="NTC.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-solid fa-dna"></i>
-              </a>
-              <p class="card-title title">
-                <a href="NTC.html" target="_blank" >Notifications Template Checker</a>
-              </p>
+        <!-- 21 -->
+        <a href="encodebase64_c.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-regular fa-image"></i>
             </div>
+            <h3 class="tool-title">Base64 Encoder</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="cal-prototype-search.iso20022.v4a.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-solid fa-location-crosshairs"></i>
-              </a>
-              <p class="card-title title">
-                <a href="cal-prototype-search.iso20022.v4a.html" target="_blank" >Centralised Address Lookup (CAL)</a>
-              </p>
+        <!-- 22 -->
+        <a href="NTC.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-solid fa-dna"></i>
             </div>
+            <h3 class="tool-title">Notifications Template Checker</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-        <div class="column is-3">
-          <div class="card" style="background-color: #faf0e6">
-            <div class="card-content has-text-centered">
-              <a href="index.3.2.html" target="_blank" class="icon is-size-3 color-indigo">
-                <i class="fa-solid fa-brain"></i>
-              </a>
-              <p class="card-title title">
-                <a href="index.3.2.html" target="_blank" >brAinstormers Hackathon Submission</a>
-              </p>
+        <!-- 23 -->
+        <a href="cal-prototype-search.iso20022.v4a.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-solid fa-location-crosshairs"></i>
             </div>
+            <h3 class="tool-title">Centralised Address Lookup (CAL)</h3>
           </div>
-        </div>
+          <div class="tool-tab"></div>
+        </a>
 
-
+        <!-- 24 -->
+        <a href="index.3.2.html" target="_blank" class="tool-card">
+          <div>
+            <div class="tool-icon">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <h3 class="tool-title">brAInstormers Hackathon Submission</h3>
+          </div>
+          <div class="tool-tab"></div>
+        </a>
       </div>
     </div>
   </section>
+
+  <script>
+    // Clone the top icon into the bottom tab for each card
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".tool-card").forEach(card => {
+        const icon = card.querySelector(".tool-icon");
+        const tab = card.querySelector(".tool-tab");
+        if (icon && tab) {
+          tab.innerHTML = icon.innerHTML;
+        }
+      });
+    });
+  </script>
 </body>
 </html>
-
-
